@@ -1,0 +1,18 @@
+[Unit]
+Description=ZTF Alert Broker Mirror Maker
+After=ztf-alerts.service
+Requires=ztf-alerts.service
+
+[Service]
+Type=simple
+User=cp-kafka
+Group=confluent
+Environment=KAFKA_HEAP_OPTS=-Xmx4G
+Environment='KAFKA_OPTS=-javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent.jar=private:8081:/etc/jmx_exporter/mirrormaker.yml'
+ExecStart=/usr/bin/kafka-mirror-maker --consumer.config /etc/ztf/consumer.properties --producer.config /etc/ztf/producer.properties --whitelist="^ztf.*$" --num.streams=16
+TimeoutStopSec=180
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target
