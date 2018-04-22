@@ -10,5 +10,4 @@
   <source address="129.89.61.82"/>
   <source address="206.189.69.78"/>
   <service name="kafka"/>
-  <port protocol="tcp" port="32181"/>
 </zone>
