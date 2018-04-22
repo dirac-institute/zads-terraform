@@ -1,28 +1,16 @@
-#
-# -- mjuric: notes:
-#    * we stop with 'kill' rather than 'stop' because mirrormaker doesn't seem to react to stop
-#    * because of that, we classify 137 (== 128 + SIGKILL) as success, otherwise systemd would
-#      record the service as failed when it's stopped. This should be fixed, though, as
-#      it means we can't distinguish stoppages from real failures (e.g., an OOM kill). FIXME.
-#
-# Useful info on systemd docker files: https://github.com/coreos/docs/issues/418
-#
-
 [Unit]
 Description=ZTF Alert Broker Mirror Maker
-After=docker.service ztf-alerts.service
-Requires=docker.service ztf-alerts.service
+After=confluent-kafka
+Requires=confluent-kafka
 
 [Service]
+Type=simple
+User=cp-kafka
+Group=confluent
+Environment=KAFKA_HEAP_OPTS=-Xmx4G
+ExecStart=/usr/bin/kafka-mirror-maker --consumer.config /etc/ztf/ipac.properties --producer.config /etc/ztf/uw.properties --whitelist="^ztf.*1$" --num.streams=8
+TimeoutStopSec=180
 Restart=no
-SyslogIdentifier=ztf-mirrormaker
-SuccessExitStatus=137
-
-ExecStartPre=-/bin/docker kill mmaker
-ExecStartPre=-/bin/docker rm mmaker
-ExecStart=/bin/docker run --network=ztf_prod_default --name=mmaker mirrormaker
-ExecStop=/bin/docker kill mmaker
-#WorkingDirectory=/epyc/projects/ztf-alerts/ztf_prod
 
 [Install]
 WantedBy=multi-user.target

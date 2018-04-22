@@ -48,7 +48,10 @@ systemctl enable confluent-kafka
 #
 # Set up systemd services that will start mirrormaker and kafka
 #
+mkdir /etc/ztf
+cp config/{ipac,uw}.properties /etc/ztf
 cp config/ztf-mirrormaker.service /etc/systemd/system/
+
 systemctl daemon-reload
 systemctl start ztf-mirrormaker
 systemctl enable ztf-mirrormaker
