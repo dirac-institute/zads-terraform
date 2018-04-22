@@ -29,7 +29,7 @@ runcmd:
   - cd /root
   - git clone https://github.com/mjuric/ztf-alert-tools.git
   - cd ztf-alert-tools/digitalocean
-  #- bash ./bootstrap.sh
+  - bash ./bootstrap.sh
 
   #firewall
   #- systemctl start firewalld
