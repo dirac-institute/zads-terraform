@@ -33,13 +33,18 @@ rpm --import https://packages.confluent.io/rpm/4.1/archive.key
 cp config/confluent.repo /etc/yum.repos.d
 yum install -y java
 #yum install -y confluent-platform-oss-2.11
-yum install confluent-kafka-2.11
+yum install -y confluent-kafka-2.11
 
-cp config/zookeeper.properties /etc/kafka
-cp config/server.properties /etc/kafka
+PRIVATE_IP=$(ifconfig eth1 | grep "inet " | awk '{print $2}')
+PUBLIC_IP=$(ifconfig eth0 | grep "inet " | awk '{print $2}')
+
+sed "s/\$PRIVATE_IP/$PRIVATE_IP/" config/zookeeper.properties > /etc/kafka/zookeeper.properties
+echo "1" > /var/lib/zookeeper/myid
 
 systemctl start confluent-zookeeper
 systemctl enable confluent-zookeeper
+
+cp config/server.properties /etc/kafka
 
 systemctl start confluent-kafka
 systemctl enable confluent-kafka
