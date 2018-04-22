@@ -45,7 +45,7 @@ yum install -y confluent-kafka-2.11
 ## More generic, but sensitive to parsing
 PRIVATE_IP=$(ifconfig eth1 | grep "inet " | awk '{print $2}')
 PUBLIC_IP=$(ifconfig eth0 | grep "inet " | awk '{print $2}')
-HOSTNAME=$(hostname)
+HOSTNAME=$(hostname -s)
 REPLICA=${HOSTNAME#kafka}
 
 sed "s/\$PRIVATE_IP/$PRIVATE_IP/" config/zookeeper.properties > /etc/kafka/zookeeper.properties
