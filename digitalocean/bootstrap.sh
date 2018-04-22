@@ -12,6 +12,7 @@ set -xe
 yum -y install firewalld
 systemctl start firewalld
 systemctl enable firewalld
+sleep 10
 
 cp config/kafka.xml /etc/firewalld/services/
 cp config/ztf-trusted.xml /etc/firewalld/zones/
