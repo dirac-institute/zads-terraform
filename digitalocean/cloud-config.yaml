@@ -1,0 +1,38 @@
+#cloud-config
+
+# log all cloud-init process output (info & errors) to a logfile
+output: {all: ">> /var/log/cloud-init-output.log"}
+
+# final_message written to log when cloud-init processes are finished
+final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds. Finished at $TIMESTAMP"
+
+users:
+  - name: root
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA3xX1xMZUPVZIEO/kAkHi8vECXYbNRbGgGhiDgFKIJRXsRBzBaauNQGEPHkY+MuqBnOWUg6msyXcPtTKmXSsnADrvi15Ujy5UARCIw8KscIvKNL4iLP/fVrmMgQB3Kr9UpVCwycFu/Bx8wwljtube0fOIZRFrxKV0wzOAsmYGzh2E2bUxvYvvWPCDJk3NoaOwnS0bKwzuP3aSxVNZPdm9X8Pyc7/eYullIG9HQk5MIsbfc5nypd8f83Kt2/s4D+TqkGeTc/KZHQa38J0CB0nQo4BzqTDelgiWEOyfrOBtIZ/tCAyLY4XnGl8/94kAneo58QkYVLeihYNc5IGdNSQRYQ== mjuric@caladan.astro.Princeton.EDU
+
+ssh_pwauth: False
+chpasswd:
+  list: |
+    root:RANDOM
+  expire: False
+
+#packages:
+#  - firewalld
+
+runcmd:
+  #Enable EPEL Repo
+  - yum -y install epel-release
+  - rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+  - yum -y install joe
+  - yum -y install git
+  - cd /root
+  - git clone https://github.com/mjuric/ztf-alert-tools.git
+  - cd ztf-alert-tools/digitalocean
+  - bash ./bootstrap.sh
+
+  #firewall
+  #- systemctl start firewalld
+  #- firewall-cmd --permanent --add-service=ssh
+  #- firewall-cmd --reload
+  #- systemctl enable firewalld

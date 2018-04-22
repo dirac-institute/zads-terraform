@@ -1,0 +1,25 @@
+#
+# -- mjuric: notes:
+#    * Added a short delay in 'ExecStartPost' to give docker time to start up the networking,
+#      as ztf-mirrormaker.service depends on it and will fail to start if it's not up. This
+#      could also be handled by Restart=always with RestartSec=10 in ztf-mirrormaker, so it
+#      keeps trying until the network is up. Not sure what's better.
+#
+
+[Unit]
+Description=ZTF Alert Broker
+After=docker.service
+Requires=docker.service
+
+[Service]
+Restart=no
+User=root
+SyslogIdentifier=ztf-alerts
+
+ExecStart=/usr/local/bin/docker-compose up
+ExecStartPost=/bin/sleep 10
+ExecStop=/usr/local/bin/docker-compose down
+WorkingDirectory=/root/ztf_prod
+
+[Install]
+WantedBy=multi-user.target

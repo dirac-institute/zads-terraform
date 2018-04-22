@@ -1,0 +1,33 @@
+version: '3.1'
+
+networks:
+  default:
+    external:
+      name: ztf_broker
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:4.1.0
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=32181
+      - ZOOKEEPER_TICK_TIME=2000
+    volumes:
+      - /var/lib/zookeeper/data:/var/lib/zookeeper/data
+      - /var/lib/zookeeper/log:/var/lib/zookeeper/log
+    ports:
+      - "32181:32181"
+
+  kafka:
+    image: confluentinc/cp-kafka:4.1.0
+    depends_on:
+      - zookeeper
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:32181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_DELETE_TOPIC_ENABLE=true
+      - KAFKA_NUM_PARTITIONS=16
+    volumes:
+      - /var/lib/kafka/data:/var/lib/kafka/data
+    ports:
+      - "9092:9092"
