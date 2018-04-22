@@ -10,16 +10,14 @@ set -xe
 # set up firewall and enable it
 #
 yum -y install firewalld
-systemctl start firewalld
-systemctl enable firewalld
-sleep 10
 
 cp config/kafka.xml /etc/firewalld/services/
 cp config/ztf-trusted.xml /etc/firewalld/zones/
+firewall-offline-cmd --zone=public --change-interface=eth0
+firewall-offline-cmd --zone=trusted --change-interface=eth1
 
-firewall-cmd --zone=public --change-interface=eth0 --permanent
-firewall-cmd --zone=trusted --change-interface=eth1 --permanent
-systemctl restart firewalld
+systemctl start firewalld
+systemctl enable firewalld
 
 #
 # Add swap space. mirrormaker runs out of memory otherwise.
