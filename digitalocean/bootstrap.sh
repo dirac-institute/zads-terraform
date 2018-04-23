@@ -54,16 +54,23 @@ PRIVATE_IP=$(ifconfig eth1 | grep "inet " | awk '{print $2}')
 PUBLIC_IP=$(ifconfig eth0 | grep "inet " | awk '{print $2}')
 HOSTNAME=$(hostname -s)
 REPLICA=${HOSTNAME#kafka}
-PUBLIC_HOSTNAME=$(hostname -s)
+PUBLIC_HOSTNAME=$(hostname)
 PRIVATE_HOSTNAME="zk${REPLICA}.ztf.mjuric.org"
 
-# Make sure that zookeeper binds to the private IP only
-sed "s/\$PRIVATE_IP/$PRIVATE_IP/" config/zookeeper.properties > /etc/kafka/zookeeper.properties
-# Store this replica number
+# Configure zookeeper
+cp_with_subst config/zookeeper.properties /etc/kafka/zookeeper.properties
 echo "$REPLICA" > /var/lib/zookeeper/myid
 
 # Kafka setup
-sed "s/\$REPLICA/$REPLICA/; s/\$PUBLIC_HOSTNAME/$PUBLIC_HOSTNAME/; s/\$PRIVATE_HOSTNAME/$PRIVATE_HOSTNAME/;" config/server.properties > /etc/kafka/server.properties
+cp_with_subst()
+{
+	cp "$1" "$2"
+	for VAR in PRIVATE_IP PUBLIC_IP HOSTNAME REPLICA PUBLIC_HOSTNAME PRIVATE_HOSTNAME; do
+		sed -i "s/\$$VAR/${!VAR}/" "$2"
+	done
+}
+
+cp_with_subst config/server.properties /etc/kafka/server.properties
 
 #
 # Set up systemd services that will start mirrormaker and kafka
