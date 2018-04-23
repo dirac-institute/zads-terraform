@@ -33,7 +33,7 @@ cp_with_subst()
 if file -sLb /dev/sda | grep filesystem; then
 	echo "Filesystem already exists on /dev/sda; preserving"
 else
-	mkfs.ext4 -F /dev/sda
+	mkfs.ext4 -m 0 -F /dev/sda
 fi
 
 mkdir -p /kafka-data
@@ -75,7 +75,12 @@ cp_with_subst config/zookeeper.properties /etc/kafka/zookeeper.properties
 echo "$REPLICA" > /var/lib/zookeeper/myid
 
 # Configure kafka
-mv /var/lib/kafka /kafka-data
+if ! -d /kafka-data/kafka; then
+	mv /var/lib/kafka /kafka-data
+else
+	# Retain existing data
+	rmdir /var/lib/kafka
+fi
 ln -sf /kafka-data/kafka /var/lib/
 cp_with_subst config/server.properties /etc/kafka/server.properties
 cp config/ztf-kafka.service /etc/systemd/system/
@@ -86,6 +91,11 @@ cp config/{ipac,uw}.properties /etc/ztf
 cp config/ztf-mirrormaker.service /etc/systemd/system/
 
 systemctl daemon-reload
+
+# Install useful utilities
+yum install -y gcc patch ruby-devel
+gem install kafkat
+cp config/dot-kafkat.cfg ~/.kafkat.cfg
 
 #
 # Enable and start it all up
