@@ -7,7 +7,27 @@
 set -xe
 
 #
-# prepare the kafka data (log) volume
+# Utils to make configuration easier
+#
+PRIVATE_IP=$(ifconfig eth1 | grep "inet " | awk '{print $2}')
+PUBLIC_IP=$(ifconfig eth0 | grep "inet " | awk '{print $2}')
+HOSTNAME=$(hostname -s)
+REPLICA=${HOSTNAME#kafka}
+PUBLIC_HOSTNAME=$(hostname)
+PRIVATE_HOSTNAME="zk${REPLICA}.ztf.mjuric.org"
+
+# Copy a file, while expanding certain variables
+# cp_with_subst <source> <dest>
+cp_with_subst()
+{
+	cp "$1" "$2"
+	for VAR in PRIVATE_IP PUBLIC_IP HOSTNAME REPLICA PUBLIC_HOSTNAME PRIVATE_HOSTNAME; do
+		sed -i "s/\$$VAR/${!VAR}/" "$2"
+	done
+}
+
+#
+# prepare and mount the kafka data (log) partition
 #
 
 if file -sLb /dev/sda | grep filesystem; then
@@ -50,31 +70,17 @@ cp config/confluent.repo /etc/yum.repos.d
 yum install -y java
 yum install -y confluent-kafka-2.11
 
-PRIVATE_IP=$(ifconfig eth1 | grep "inet " | awk '{print $2}')
-PUBLIC_IP=$(ifconfig eth0 | grep "inet " | awk '{print $2}')
-HOSTNAME=$(hostname -s)
-REPLICA=${HOSTNAME#kafka}
-PUBLIC_HOSTNAME=$(hostname)
-PRIVATE_HOSTNAME="zk${REPLICA}.ztf.mjuric.org"
-
 # Configure zookeeper
 cp_with_subst config/zookeeper.properties /etc/kafka/zookeeper.properties
 echo "$REPLICA" > /var/lib/zookeeper/myid
 
-# Kafka setup
-cp_with_subst()
-{
-	cp "$1" "$2"
-	for VAR in PRIVATE_IP PUBLIC_IP HOSTNAME REPLICA PUBLIC_HOSTNAME PRIVATE_HOSTNAME; do
-		sed -i "s/\$$VAR/${!VAR}/" "$2"
-	done
-}
-
+# Configure kafka
+mv /var/lib/kafka /kafka-data
+ln -sf /kafka-data/kafka /var/lib/
 cp_with_subst config/server.properties /etc/kafka/server.properties
+cp config/ztf-kafka.service /etc/systemd/system/
 
-#
-# Set up systemd services that will start mirrormaker and kafka
-#
+# Configure mirror-maker
 mkdir /etc/ztf
 cp config/{ipac,uw}.properties /etc/ztf
 cp config/ztf-mirrormaker.service /etc/systemd/system/
@@ -89,8 +95,8 @@ exit
 systemctl start confluent-zookeeper
 systemctl enable confluent-zookeeper
 
-systemctl start confluent-kafka
-systemctl enable confluent-kafka
+systemctl start ztf-kafka
+systemctl enable ztf-kafka
 
 systemctl start ztf-mirrormaker
 systemctl enable ztf-mirrormaker
