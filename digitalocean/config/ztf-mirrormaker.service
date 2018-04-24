@@ -1,7 +1,7 @@
 [Unit]
 Description=ZTF Alert Broker Mirror Maker
-After=confluent-kafka
-Requires=confluent-kafka
+After=ztf-kafka.service
+Requires=ztf-kafka.service
 
 [Service]
 Type=simple
