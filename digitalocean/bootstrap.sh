@@ -15,7 +15,7 @@ HOSTNAME=$(hostname -s)
 REPLICA=${HOSTNAME#kafka}
 PUBLIC_HOSTNAME=$(hostname)
 PRIVATE_HOSTNAME="zk${REPLICA}.ztf.mjuric.org"
-USE_VOLUME=0
+USE_VOLUME=1
 
 # Copy a file, while expanding certain variables
 # cp_with_subst <source> <dest>
