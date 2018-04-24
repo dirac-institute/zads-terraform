@@ -15,6 +15,7 @@ HOSTNAME=$(hostname -s)
 REPLICA=${HOSTNAME#kafka}
 PUBLIC_HOSTNAME=$(hostname)
 PRIVATE_HOSTNAME="zk${REPLICA}.ztf.mjuric.org"
+USE_VOLUME=0
 
 # Copy a file, while expanding certain variables
 # cp_with_subst <source> <dest>
@@ -30,15 +31,17 @@ cp_with_subst()
 # prepare and mount the kafka data (log) partition
 #
 
-if file -sLb /dev/sda | grep filesystem; then
-	echo "Filesystem already exists on /dev/sda; preserving"
-else
-	mkfs.ext4 -m 0 -F /dev/sda
-fi
+if [[ $USE_VOLUME == 1 ]]; then
+	if file -sLb /dev/sda | grep filesystem; then
+		echo "Filesystem already exists on /dev/sda; preserving"
+	else
+		mkfs.ext4 -m 0 -F /dev/sda
+	fi
 
-mkdir -p /kafka-data
-echo "/dev/sda /kafka-data ext4 defaults,nofail,discard 0 0" >> /etc/fstab
-mount /kafka-data
+	mkdir -p /kafka-data
+	echo "/dev/sda /kafka-data ext4 defaults,nofail,discard 0 0" >> /etc/fstab
+	mount /kafka-data
+fi
 
 #
 # set up firewall and enable it
@@ -79,13 +82,16 @@ echo "$REPLICA" > /var/lib/zookeeper/myid
 #
 # KAFKA
 #
-if ! -d /kafka-data/kafka; then
-	mv /var/lib/kafka /kafka-data
-else
-	# Retain existing data
-	rmdir /var/lib/kafka
+if [[ $USE_VOLUME == 1 ]]; then
+	if ! -d /kafka-data/kafka; then
+		mv /var/lib/kafka /kafka-data
+	else
+		# Retain existing data
+		rmdir /var/lib/kafka
+	fi
+	ln -sf /kafka-data/kafka /var/lib/
 fi
-ln -sf /kafka-data/kafka /var/lib/
+
 cp_with_subst config/server.properties /etc/kafka/server.properties
 cp config/ztf-kafka.service /etc/systemd/system/
 
