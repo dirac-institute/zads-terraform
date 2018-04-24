@@ -70,11 +70,15 @@ cp config/confluent.repo /etc/yum.repos.d
 yum install -y java
 yum install -y confluent-kafka-2.11
 
-# Configure zookeeper
+#
+# ZOOKEEPER
+#
 cp_with_subst config/zookeeper.properties /etc/kafka/zookeeper.properties
 echo "$REPLICA" > /var/lib/zookeeper/myid
 
-# Configure kafka
+#
+# KAFKA
+#
 if ! -d /kafka-data/kafka; then
 	mv /var/lib/kafka /kafka-data
 else
@@ -85,14 +89,18 @@ ln -sf /kafka-data/kafka /var/lib/
 cp_with_subst config/server.properties /etc/kafka/server.properties
 cp config/ztf-kafka.service /etc/systemd/system/
 
-# Configure mirror-maker
+#
+# MIRROR-MAKER
+#
 mkdir /etc/ztf
 cp config/{ipac,uw}.properties /etc/ztf
 cp config/ztf-mirrormaker.service /etc/systemd/system/
 
 systemctl daemon-reload
 
+#
 # Install useful utilities
+#
 yum install -y gcc patch ruby-devel
 gem install kafkat
 cp config/dot-kafkat.cfg ~/.kafkatcfg

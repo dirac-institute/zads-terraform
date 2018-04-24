@@ -17,11 +17,7 @@ chpasswd:
     root:RANDOM
   expire: False
 
-#packages:
-#  - firewalld
-
 runcmd:
-  #Enable EPEL Repo
   - yum -y install epel-release
   - rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
   - yum -y install joe iftop screen bind-utils
@@ -30,9 +26,3 @@ runcmd:
   - git clone https://github.com/mjuric/ztf-alert-tools.git
   - cd ztf-alert-tools/digitalocean
   - bash ./bootstrap.sh
-
-  #firewall
-  #- systemctl start firewalld
-  #- firewall-cmd --permanent --add-service=ssh
-  #- firewall-cmd --reload
-  #- systemctl enable firewalld
