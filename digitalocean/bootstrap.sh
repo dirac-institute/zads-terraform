@@ -95,7 +95,7 @@ systemctl daemon-reload
 # Install useful utilities
 yum install -y gcc patch ruby-devel
 gem install kafkat
-cp config/dot-kafkat.cfg ~/.kafkat.cfg
+cp config/dot-kafkat.cfg ~/.kafkatcfg
 
 #
 # Enable and start it all up
