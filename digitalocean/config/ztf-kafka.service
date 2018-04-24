@@ -1,7 +1,7 @@
 [Unit]
 Description=Apache Kafka - broker
 Documentation=http://docs.confluent.io/
-Requires=kafka\x2ddata.mount
+Requires=kafka\x2ddata.mount confluent-zookeeper.service
 After=network.target confluent-zookeeper.target
 
 [Service]
