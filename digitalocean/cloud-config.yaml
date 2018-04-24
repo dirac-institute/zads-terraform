@@ -20,7 +20,7 @@ chpasswd:
 runcmd:
   - yum -y install epel-release
   - rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
-  - yum -y install joe iftop screen bind-utils
+  - yum -y install joe iftop screen bind-utils telnet
   - yum -y install git
   - cd /root
   - git clone https://github.com/mjuric/ztf-alert-tools.git
