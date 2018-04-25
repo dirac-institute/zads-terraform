@@ -1,7 +1,7 @@
 [Unit]
 Description=ZTF Alert Broker Mirror Maker
-After=ztf-kafka.service
-Requires=ztf-kafka.service
+After=ztf-kafka.target
+Requires=ztf-kafka.target
 
 [Service]
 Type=simple

@@ -61,6 +61,7 @@ cp config/zookeeper.properties /etc/kafka/zookeeper.properties
 # KAFKA
 #
 cp config/server.properties /etc/kafka/server.properties
+cp config/ztf-kafka.target /etc/systemd/system/ztf-kafka.target
 for BROKER in 0 1 2; do
 	((PORT = 9092 + BROKER))
 	LISTENERS="PLAINTEXT://:$PORT"
