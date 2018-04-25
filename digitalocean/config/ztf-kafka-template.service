@@ -3,6 +3,7 @@ Description=Apache Kafka - broker
 Documentation=http://docs.confluent.io/
 Requires=confluent-zookeeper.service
 After=network.target confluent-zookeeper.target
+PartOf=ztf-kafka.target
 
 [Service]
 Type=simple
@@ -16,3 +17,4 @@ RestartSec=60
 
 [Install]
 WantedBy=multi-user.target
+WantedBy=ztf-kafka.target
