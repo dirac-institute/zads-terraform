@@ -15,9 +15,10 @@ set -xe
 cp_with_subst()
 {
 	cp "$1" "$2"
+	_DEST="$2"
 	shift 2
 	for VAR in "$@"; do
-		sed -i "s/\$$VAR/${!VAR}/" "$2"
+		sed -i "s|\$$VAR|${!VAR}|" "$_DEST"
 	done
 }
 
@@ -62,8 +63,8 @@ cp config/zookeeper.properties /etc/kafka/zookeeper.properties
 cp config/server.properties /etc/kafka/server.properties
 for BROKER in 0 1 2; do
 	((PORT = 9092 + BROKER))
-	LISTENERS="listeners=PLAINTEXT://:$PORT"
-	cp_with_subst config/ztf-kafka-template.service /etc/systemd/system/ztf-kafka-$BROKER.service LISTENERS PORT
+	LISTENERS="PLAINTEXT://:$PORT"
+	cp_with_subst config/ztf-kafka-template.service /etc/systemd/system/ztf-kafka-$BROKER.service BROKER LISTENERS
 done
 
 #
