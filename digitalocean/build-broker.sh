@@ -8,7 +8,7 @@ doctl()
 }
 
 # Create broker instance
-# Usage: create_droplet <name> <region> <fqdn_public> <fqdn_private> [volumes_to_attach]
+# Usage: create_droplet <name> <region> <fqdn_public> [fqdn_private [volumes_to_attach]]
 # Returns: droplet ID
 create_droplet()
 {
@@ -46,10 +46,12 @@ create_droplet()
 	dns_register "$HOSTNAME" "$DOMAIN" A    "$ADDR4"
 	dns_register "$HOSTNAME" "$DOMAIN" AAAA "$ADDR6"
 
-	# Register private domain name
-	local HOSTNAME=${FQDNPRIVATE%%.*}
-	local DOMAIN=${FQDNPRIVATE#$HOSTNAME.}
-	dns_register "$HOSTNAME" "$DOMAIN" A    "$PRIVADDR4"
+	if [[ ! -z $FQDNPRIVATE ]]; then
+		# Register private domain name
+		local HOSTNAME=${FQDNPRIVATE%%.*}
+		local DOMAIN=${FQDNPRIVATE#$HOSTNAME.}
+		dns_register "$HOSTNAME" "$DOMAIN" A    "$PRIVADDR4"
+	fi
 }
 
 # Add DNS entries
@@ -76,49 +78,12 @@ dns_register()
 
 CLOBBER=1
 
-KAFKAPREFIX="kafka"
-ZKPREFIX="zk"
-
-REGIONS=(sfo2 sfo2 sfo2)
-DOMAIN=ztf.mjuric.org
-BLOCK_SIZE="200GiB"
-#BLOCK_SIZE=
-#INSTANCE_TYPE=s-6vcpu-16gb
+REGION=sfo2
+DROPLET=alerts.ztf.mjuric.org
+INSTANCE_TYPE=s-6vcpu-16gb
 #INSTANCE_TYPE=s-2vcpu-2gb
-INSTANCE_TYPE=s-1vcpu-2gb
+#INSTANCE_TYPE=s-1vcpu-2gb
 
-# Create brokers and data volumes
-for I in "${!REGIONS[@]}"; do
-	if [[ $I == 5 || $I == 5 ]]; then
-		echo "Skipping $I"
-		continue
-	fi
+###
 
-	(( REPLICA=I+1 ))
-	REGION=${REGIONS[$I]}
-
-	KAFKA="$KAFKAPREFIX$REPLICA"
-	ZK="$ZKPREFIX$REPLICA"
-	FQDNPUBLIC="$KAFKA.$DOMAIN"
-	FQDNPRIVATE="$ZK.$DOMAIN"
-
-	DROPLET="$FQDNPUBLIC"
-	VOLNAME="$KAFKA-data"
-
-	# Create data volumes
-	if [[ ! -z $BLOCK_SIZE ]]; then
-		if doctl compute volume list --no-header --format Name | grep -q $VOLNAME; then
-			echo "Volume $VOLNAME already exists. Skipping creation."
-		else
-			doctl compute volume create "$VOLNAME" --desc "$DROPLET storage" --region "$REGION" --size $BLOCK_SIZE
-		fi
-		VOLUME=$(doctl compute volume list --no-header --format Name,ID | grep "^$VOLNAME " | awk '{print $2}')
-	fi
-
-	# Create droplets, attach the data volume
-	create_droplet $DROPLET $REGION $FQDNPUBLIC $FQDNPRIVATE $VOLUME
-
-	# HACK: Change the private DNS entry to the public IP
-	# Private networks are datacenter-internal only
-	#dns_register "$ZK" "$DOMAIN" A $(doctl compute droplet list --no-header --format "PublicIPv4" "$DROPLET")
-done
+create_droplet $DROPLET $REGION $DROPLET

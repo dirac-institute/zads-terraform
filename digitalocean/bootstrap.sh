@@ -9,11 +9,6 @@ set -xe
 #
 # Utils to make configuration easier
 #
-PRIVATE_IP=$(127.0.0.1)
-PUBLIC_IP=$(ifconfig eth0 | grep "inet " | awk '{print $2}')
-HOSTNAME=$(hostname -s)
-PUBLIC_HOSTNAME=$(hostname)
-PRIVATE_HOSTNAME="localhost"
 
 # Copy a file, while expanding certain variables
 # cp_with_subst <source> <dest> [variables]
