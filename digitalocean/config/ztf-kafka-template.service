@@ -8,7 +8,7 @@ After=network.target confluent-zookeeper.target
 Type=simple
 User=cp-kafka
 Group=confluent
-ExecStart=/usr/bin/kafka-server-start /etc/kafka/server.properties --override broker.id=$BROKER --override listeners=$LISTENERS
+ExecStart=/usr/bin/kafka-server-start /etc/kafka/server.properties --override broker.id=$BROKER --override listeners=$LISTENERS --override log.dirs=/var/lib/kafka/$BROKER
 TimeoutStopSec=180
 Restart=always
 SuccessExitStatus=143
