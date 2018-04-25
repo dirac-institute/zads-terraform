@@ -18,6 +18,7 @@ chpasswd:
   expire: False
 
 runcmd:
+  - chown 600 /var/log/cloud-init-output.log
   - yum -y install epel-release
   - rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
   - yum -y install joe iftop screen bind-utils telnet
@@ -25,4 +26,5 @@ runcmd:
   - cd /root
   - git clone https://github.com/mjuric/ztf-alert-tools.git
   - cd ztf-alert-tools/digitalocean
+  - git checkout single-server
   - bash ./bootstrap.sh

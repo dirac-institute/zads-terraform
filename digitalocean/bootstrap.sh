@@ -9,39 +9,22 @@ set -xe
 #
 # Utils to make configuration easier
 #
-PRIVATE_IP=$(ifconfig eth1 | grep "inet " | awk '{print $2}')
+PRIVATE_IP=$(127.0.0.1)
 PUBLIC_IP=$(ifconfig eth0 | grep "inet " | awk '{print $2}')
 HOSTNAME=$(hostname -s)
-REPLICA=${HOSTNAME#kafka}
 PUBLIC_HOSTNAME=$(hostname)
-PRIVATE_HOSTNAME="zk${REPLICA}.ztf.mjuric.org"
-USE_VOLUME=1
+PRIVATE_HOSTNAME="localhost"
 
 # Copy a file, while expanding certain variables
-# cp_with_subst <source> <dest>
+# cp_with_subst <source> <dest> [variables]
 cp_with_subst()
 {
 	cp "$1" "$2"
-	for VAR in PRIVATE_IP PUBLIC_IP HOSTNAME REPLICA PUBLIC_HOSTNAME PRIVATE_HOSTNAME; do
+	shift 2
+	for VAR in "$@"; do
 		sed -i "s/\$$VAR/${!VAR}/" "$2"
 	done
 }
-
-#
-# prepare and mount the kafka data (log) partition
-#
-
-if [[ $USE_VOLUME == 1 ]]; then
-	if file -sLb /dev/sda | grep filesystem; then
-		echo "Filesystem already exists on /dev/sda; preserving"
-	else
-		mkfs.ext4 -m 0 -F /dev/sda
-	fi
-
-	mkdir -p /kafka-data
-	echo "/dev/sda /kafka-data ext4 defaults,nofail,discard 0 0" >> /etc/fstab
-	mount /kafka-data
-fi
 
 #
 # set up firewall and enable it
@@ -57,7 +40,7 @@ systemctl start firewalld
 systemctl enable firewalld
 
 #
-# Add swap space. mirrormaker runs out of memory otherwise.
+# Add swap space, just in case
 #
 dd if=/dev/zero of=/swapfile count=16 bs=512MiB
 chmod 600 /swapfile
@@ -76,24 +59,17 @@ yum install -y confluent-kafka-2.11
 #
 # ZOOKEEPER
 #
-cp_with_subst config/zookeeper.properties /etc/kafka/zookeeper.properties
-echo "$REPLICA" > /var/lib/zookeeper/myid
+cp config/zookeeper.properties /etc/kafka/zookeeper.properties
 
 #
 # KAFKA
 #
-if [[ $USE_VOLUME == 1 ]]; then
-	if ! -d /kafka-data/kafka; then
-		mv /var/lib/kafka /kafka-data
-	else
-		# Retain existing data
-		rmdir /var/lib/kafka
-	fi
-	ln -sf /kafka-data/kafka /var/lib/
-fi
-
-cp_with_subst config/server.properties /etc/kafka/server.properties
-cp config/ztf-kafka.service /etc/systemd/system/
+cp config/server.properties /etc/kafka/server.properties
+for BROKER in 0 1 2; do
+	((PORT = 9092 + BROKER))
+	LISTENERS="listeners=PLAINTEXT://:$PORT"
+	cp_with_subst config/ztf-kafka-template.service /etc/systemd/system/ztf-kafka-$BROKER.service LISTENERS PORT
+done
 
 #
 # MIRROR-MAKER

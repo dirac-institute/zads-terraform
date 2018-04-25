@@ -1,14 +1,14 @@
 [Unit]
 Description=Apache Kafka - broker
 Documentation=http://docs.confluent.io/
-Requires=kafka\x2ddata.mount confluent-zookeeper.service
+Requires=confluent-zookeeper.service
 After=network.target confluent-zookeeper.target
 
 [Service]
 Type=simple
 User=cp-kafka
 Group=confluent
-ExecStart=/usr/bin/kafka-server-start /etc/kafka/server.properties
+ExecStart=/usr/bin/kafka-server-start /etc/kafka/server.properties --override broker.id=$BROKER --override listeners=$LISTENERS
 TimeoutStopSec=180
 Restart=always
 SuccessExitStatus=143

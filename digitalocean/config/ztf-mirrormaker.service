@@ -8,7 +8,7 @@ Type=simple
 User=cp-kafka
 Group=confluent
 Environment=KAFKA_HEAP_OPTS=-Xmx4G
-ExecStart=/usr/bin/kafka-mirror-maker --consumer.config /etc/ztf/ipac.properties --producer.config /etc/ztf/uw.properties --whitelist="^ztf.*1$" --num.streams=4
+ExecStart=/usr/bin/kafka-mirror-maker --consumer.config /etc/ztf/ipac.properties --producer.config /etc/ztf/uw.properties --whitelist="^ztf.*1$" --num.streams=16
 TimeoutStopSec=180
 Restart=always
 RestartSec=60
