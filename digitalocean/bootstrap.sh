@@ -18,7 +18,7 @@ cp_with_subst()
 	_DEST="$2"
 	shift 2
 	for VAR in "$@"; do
-		sed -i "s|\$$VAR|${!VAR}|" "$_DEST"
+		sed -i "s|\$$VAR|${!VAR}|g" "$_DEST"
 	done
 }
 
