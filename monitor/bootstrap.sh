@@ -65,16 +65,3 @@ systemctl start node_exporter
 curl -L http://research.majuric.org/other/kafkacat -o /usr/local/bin/kafkacat
 chmod +x /usr/local/bin/kafkacat
 
-#
-# Enable and start it all up
-#
-exit
-
-systemctl start confluent-zookeeper
-systemctl enable confluent-zookeeper
-
-systemctl start ztf-alerts
-systemctl enable ztf-alerts
-
-systemctl start ztf-mirrormaker
-systemctl enable ztf-mirrormaker

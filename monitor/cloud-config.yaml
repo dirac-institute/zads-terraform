@@ -27,4 +27,4 @@ runcmd:
   - git clone https://github.com/mjuric/ztf-alert-tools.git
   - cd ztf-alert-tools/monitor
   - git checkout single-server
-#  - bash ./bootstrap.sh
+  - bash ./bootstrap.sh
