@@ -89,7 +89,7 @@ cp config/ztf-mirrormaker.service /etc/systemd/system/
 systemctl daemon-reload
 
 #
-# Useful utilities
+# Set up kafkacat, to ease debugging
 #
 curl -L http://research.majuric.org/other/kafkacat -o /usr/local/bin/kafkacat
 chmod +x /usr/local/bin/kafkacat

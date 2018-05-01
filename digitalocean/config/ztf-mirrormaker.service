@@ -1,7 +1,7 @@
 [Unit]
 Description=ZTF Alert Broker Mirror Maker
-After=ztf-alerts.target
-Requires=ztf-alerts.target
+After=ztf-alerts.service
+Requires=ztf-alerts.service
 
 [Service]
 Type=simple
