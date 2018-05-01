@@ -63,6 +63,30 @@ systemctl start prometheus
 cp config/grafana.repo /etc/yum.repos.d/grafana.repo
 yum install -y grafana
 
+systemctl start grafana-server
+systemctl status grafana-server
+
+#
+# Install Apache for proxying to the world
+#
+firewall-cmd --add-service=http
+firewall-cmd --add-service=https
+firewall-cmd --add-service=http --permanent
+firewall-cmd --add-service=https --permanent
+firewall-cmd --list-all
+
+yum install httpd mod_ssl python-certbot-apache -y
+systemctl start httpd
+systemctl enable httpd
+
+#
+# Obtain a Let's Encrypt crtificate
+#
+#dry run:    certbot --apache -d monitor.ztf.mjuric.org --dry-run -m "mjuric@uw.edu" -n certonly
+#real thing: certbot --apache -d monitor.ztf.mjuric.org -m "mjuric@uw.edu" -n certonly --agree-tos
+cp config/certbot /etc/cron.daily/certbot
+chmod +x /etc/cron.daily/certbot
+
 #
 # Set up kafkacat, to ease debugging
 #
