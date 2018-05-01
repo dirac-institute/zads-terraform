@@ -1,6 +1,6 @@
 #
 # Setting up a host to run the ZTF broker. These instructions will set up 
-# the firewall, plus services necessary to boot the broker containers whenever the
+# the firewall, plus services necessary to boot the broker whenever the
 # hosts starts.
 #
 
@@ -83,7 +83,6 @@ systemctl daemon-reload
 yum install -y gcc patch ruby-devel
 gem install kafkat
 cp config/dot-kafkat.cfg ~/.kafkatcfg
-
 #
 # Enable and start it all up
 #
