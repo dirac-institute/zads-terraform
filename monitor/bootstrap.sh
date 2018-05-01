@@ -6,21 +6,9 @@
 
 set -xe
 
-#
-# Utils to make configuration easier
-#
+. functions.sh
 
-# Copy a file, while expanding certain variables
-# cp_with_subst <source> <dest> [variables]
-cp_with_subst()
-{
-	cp "$1" "$2"
-	_DEST="$2"
-	shift 2
-	for VAR in "$@"; do
-		sed -i "s|\$$VAR|${!VAR}|g" "$_DEST"
-	done
-}
+. config/bootstrap
 
 #
 # set up firewall and enable it
@@ -60,8 +48,14 @@ echo "NODE_EXPORTER_OPTS='--web.listen-address private:9100'" > /etc/default/nod
 systemctl start node_exporter
 
 #
+# Install and set up Prometheus
+#
+yum install -y prometheus2
+mkdir -p /etc/prometheus
+cp_with_subst config/prometheus.yml /etc/prometheus/prometheus.yml
+
+#
 # Set up kafkacat, to ease debugging
 #
 curl -L http://research.majuric.org/other/kafkacat -o /usr/local/bin/kafkacat
 chmod +x /usr/local/bin/kafkacat
-

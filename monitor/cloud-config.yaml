@@ -25,6 +25,7 @@ runcmd:
   - yum -y install git
   - cd /root
   - git clone https://github.com/mjuric/ztf-alert-tools.git
-  - cd ztf-alert-tools/monitor
+  - cd ztf-alert-tools
   - git checkout single-server
+  - cd monitor
   - bash ./bootstrap.sh
