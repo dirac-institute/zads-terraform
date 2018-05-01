@@ -1,25 +1,18 @@
-#
-# -- mjuric: notes:
-#    * Added a short delay in 'ExecStartPost' to give docker time to start up the networking,
-#      as ztf-mirrormaker.service depends on it and will fail to start if it's not up. This
-#      could also be handled by Restart=always with RestartSec=10 in ztf-mirrormaker, so it
-#      keeps trying until the network is up. Not sure what's better.
-#
-
 [Unit]
-Description=ZTF Alert Broker
-After=docker.service
-Requires=docker.service
+Description=Apache Kafka - broker for ZTF Alerts
+Requires=confluent-zookeeper.service firewalld.service
+After=network.target confluent-zookeeper.service firewalld.service
 
 [Service]
-Restart=no
-User=root
-SyslogIdentifier=ztf-alerts
-
-ExecStart=/usr/local/bin/docker-compose up
-ExecStartPost=/bin/sleep 10
-ExecStop=/usr/local/bin/docker-compose down
-WorkingDirectory=/root/ztf_prod
+Type=simple
+User=cp-kafka
+Group=confluent
+Environment='KAFKA_OPTS=-javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent.jar=private:8080:/etc/jmx_exporter/kafka.yml'
+ExecStart=/usr/bin/kafka-server-start /etc/kafka/server.properties
+TimeoutStopSec=180
+Restart=always
+SuccessExitStatus=143
+RestartSec=60
 
 [Install]
 WantedBy=multi-user.target

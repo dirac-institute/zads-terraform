@@ -1,14 +1,14 @@
 [Unit]
 Description=ZTF Alert Broker Mirror Maker
-After=ztf-kafka.target
-Requires=ztf-kafka.target
+After=ztf-alerts.target
+Requires=ztf-alerts.target
 
 [Service]
 Type=simple
 User=cp-kafka
 Group=confluent
 Environment=KAFKA_HEAP_OPTS=-Xmx4G
-ExecStart=/usr/bin/kafka-mirror-maker --consumer.config /etc/ztf/ipac.properties --producer.config /etc/ztf/uw.properties --whitelist="^ztf.*1$" --num.streams=16
+ExecStart=/usr/bin/kafka-mirror-maker --consumer.config /etc/ztf/consumer.properties --producer.config /etc/ztf/producer.properties --whitelist="^ztf.*$" --num.streams=16
 TimeoutStopSec=180
 Restart=always
 RestartSec=60

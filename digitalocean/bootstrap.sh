@@ -36,6 +36,15 @@ systemctl start firewalld
 systemctl enable firewalld
 
 #
+# set up inernal hostnames
+#
+PUBLIC_IP=$(ifconfig eth0 | grep "inet " | awk '{print $2}')
+PRIVATE_IP=$(ifconfig eth1 | grep "inet " | awk '{print $2}')
+echo "# Shortcuts used in config files"
+echo "$PUBLIC_IP public" >> /etc/hosts
+echo "$PRIVATE_IP private" >> /etc/hosts
+
+#
 # Add swap space, just in case
 #
 dd if=/dev/zero of=/swapfile count=16 bs=512MiB
@@ -43,6 +52,13 @@ chmod 600 /swapfile
 mkswap /swapfile
 echo "/swapfile   swap    swap    sw  0   0" >> /etc/fstab
 swapon -a
+
+#
+# Download the Prometheus agent, for exporting JVM (JMX) metrics to Prometheus
+#
+
+mkdir -p /opt/jmx_exporter
+curl -L https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.3.0/jmx_prometheus_javaagent-0.3.0.jar -o /opt/jmx_exporter/jmx_prometheus_javaagent.jar
 
 #
 # Install and configure kafka, zookeeper, and mirrormaker
@@ -61,12 +77,7 @@ cp config/zookeeper.properties /etc/kafka/zookeeper.properties
 # KAFKA
 #
 cp config/server.properties /etc/kafka/server.properties
-cp config/ztf-kafka.target /etc/systemd/system/ztf-kafka.target
-for BROKER in 0 1 2; do
-	((PORT = 9092 + BROKER))
-	LISTENERS="PLAINTEXT://:$PORT"
-	cp_with_subst config/ztf-kafka-template.service /etc/systemd/system/ztf-kafka-$BROKER.service BROKER LISTENERS
-done
+cp config/ztf-alerts.service /etc/systemd/system/ztf-alerts.service
 
 #
 # MIRROR-MAKER
@@ -78,11 +89,11 @@ cp config/ztf-mirrormaker.service /etc/systemd/system/
 systemctl daemon-reload
 
 #
-# Install useful utilities
+# Useful utilities
 #
-yum install -y gcc patch ruby-devel
-gem install kafkat
-cp config/dot-kafkat.cfg ~/.kafkatcfg
+curl -L http://research.majuric.org/other/kafkacat -o /usr/local/bin/kafkacat
+chmod +x /usr/local/bin/kafkacat
+
 #
 # Enable and start it all up
 #
@@ -91,8 +102,8 @@ exit
 systemctl start confluent-zookeeper
 systemctl enable confluent-zookeeper
 
-systemctl start ztf-kafka
-systemctl enable ztf-kafka
+systemctl start ztf-alerts
+systemctl enable ztf-alerts
 
 systemctl start ztf-mirrormaker
 systemctl enable ztf-mirrormaker
