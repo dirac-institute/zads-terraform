@@ -79,8 +79,8 @@ dns_register()
 CLOBBER=1
 
 REGION=sfo2
-DROPLET=alerts.ztf.mjuric.org
-#DROPLET=alerts-single.ztf.mjuric.org
+#DROPLET=alerts.ztf.mjuric.org
+DROPLET=zads.ztf.mjuric.org
 #INSTANCE_TYPE=s-6vcpu-16gb
 #INSTANCE_TYPE=s-2vcpu-2gb
 #INSTANCE_TYPE=s-1vcpu-2gb

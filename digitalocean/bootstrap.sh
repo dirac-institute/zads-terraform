@@ -40,7 +40,7 @@ systemctl enable firewalld
 #
 PUBLIC_IP=$(ifconfig eth0 | grep "inet " | awk '{print $2}')
 PRIVATE_IP=$(ifconfig eth1 | grep "inet " | awk '{print $2}')
-echo "# Shortcuts used in config files"
+echo "# Shortcuts used in config files" >> /etc/hosts
 echo "$PUBLIC_IP public" >> /etc/hosts
 echo "$PRIVATE_IP private" >> /etc/hosts
 
@@ -54,11 +54,13 @@ echo "/swapfile   swap    swap    sw  0   0" >> /etc/fstab
 swapon -a
 
 #
-# Download the Prometheus agent, for exporting JVM (JMX) metrics to Prometheus
+# Set up the Prometheus JMX exporter, for exporting JVM (JMX) metrics to Prometheus
 #
 
 mkdir -p /opt/jmx_exporter
 curl -L https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.3.0/jmx_prometheus_javaagent-0.3.0.jar -o /opt/jmx_exporter/jmx_prometheus_javaagent.jar
+mkdir /etc/jmx_exporter
+cp config/{kafka,mirrormaker}.yml /etc/jmx_exporter
 
 #
 # Install and configure kafka, zookeeper, and mirrormaker
@@ -83,7 +85,7 @@ cp config/ztf-alerts.service /etc/systemd/system/ztf-alerts.service
 # MIRROR-MAKER
 #
 mkdir /etc/ztf
-cp config/{ipac,uw}.properties /etc/ztf
+cp config/{consumer,producer}.properties /etc/ztf
 cp config/ztf-mirrormaker.service /etc/systemd/system/
 
 systemctl daemon-reload
