@@ -7,7 +7,6 @@
 set -xe
 
 . functions.sh
-
 . config/bootstrap
 
 #
@@ -52,7 +51,17 @@ systemctl start node_exporter
 #
 yum install -y prometheus2
 mkdir -p /etc/prometheus
-cp_with_subst config/prometheus.yml /etc/prometheus/prometheus.yml
+cp_with_subst config/prometheus.yml /etc/prometheus/prometheus.yml BROKER_PRIVATE_FQDN
+#echo "PROMETHEUS_OPTS='--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/var/lib/prometheus/data --web.listen-address localhost:9090'" > /etc/default/prometheus
+
+systemctl daemon-reload
+systemctl start prometheus
+
+#
+# Install and set up Grafana
+#
+cp config/grafana.repo /etc/yum.repos.d/grafana.repo
+yum install -y grafana
 
 #
 # Set up kafkacat, to ease debugging
