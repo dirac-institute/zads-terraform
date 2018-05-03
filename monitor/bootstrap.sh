@@ -87,6 +87,10 @@ systemctl enable httpd
 cp config/certbot /etc/cron.daily/certbot
 chmod +x /etc/cron.daily/certbot
 
+cp config/ssl.conf /etc/httpd/conf.d/ssl.conf
+
+setsebool -P httpd_can_network_connect=true
+
 #
 # Set up kafkacat, to ease debugging
 #
