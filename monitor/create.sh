@@ -76,12 +76,40 @@ dns_register()
 
 ###
 
-CLOBBER=1
+die_with_usage()
+{
+	(
+		echo "usage:"
+		echo "    $0 <droplet> <region> <instance_type>"
+		echo ""
+		echo "example:"
+		echo "    $0 status.ztf.mjuric.org sfo2 s-1vcpu-1gb"
+		echo
+	) 2>&1
+	exit -1
+}
 
-REGION=sfo2
-DROPLET=monitor.ztf.mjuric.org
-INSTANCE_TYPE=s-1vcpu-1gb
 
 ###
 
-create_droplet $DROPLET $REGION $DROPLET "priv-$DROPLET"
+test "$#" -eq 3 || die_with_usage
+
+CLOBBER=0
+DROPLET="$1"
+REGION="$2"
+INSTANCE_TYPE="$3"
+
+echo
+echo "Droplet name:  $DROPLET"
+echo "Instance type: $INSTANCE_TYPE"
+echo "Region:        $REGION"
+echo
+
+read -p "OK to proceed? " -r
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+	#create_droplet $DROPLET $REGION $DROPLET "priv-$DROPLET"
+	echo
+else
+	echo "Aborted by user."
+fi
