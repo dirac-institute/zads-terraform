@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3.6
 
 import http.server
 import socketserver
@@ -16,8 +16,8 @@ ztf_20180322_programid2  9          -               443             -           
 """
 
 def describe_consumer_group(group):
-#    out = subprocess.check_output(["/usr/bin/kafka-consumer-groups", "--bootstrap-server", "epyc.astro.washington.edu:9092", "--group", group, "--describe"], stdout=subprocess.PIPE)
-    out = test_data
+    out = subprocess.check_output(["/usr/bin/kafka-consumer-groups", "--bootstrap-server", "epyc.astro.washington.edu:9092", "--group", group, "--describe"]).decode('utf-8')
+#    out = test_data
     lines = [ line.split() for line in out.split('\n')]
     lines = [ line for line in lines if len(line) == 8 ]	# remove anything that's not well formatted
     if(lines[0][0] == "TOPIC"): lines.pop(0)			# remove header
@@ -48,6 +48,11 @@ class RequestHandler(http.server.BaseHTTPRequestHandler):
         self.do_HEAD()
         self.wfile.write(result.encode("utf-8"))
         self.wfile.write('\n'.encode("utf-8"))
+
+#group="zads-mirror"
+#out = subprocess.check_output(["/usr/bin/kafka-consumer-groups", "--bootstrap-server", "epyc.astro.washington.edu:9092", "--group", group, "--describe"]).decode('utf-8')
+#print("[[" + out + "]]")
+#exit(0)
 
 Handler = RequestHandler
 
