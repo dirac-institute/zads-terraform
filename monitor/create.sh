@@ -108,8 +108,7 @@ echo
 read -p "OK to proceed? " -r
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-	#create_droplet $DROPLET $REGION $DROPLET "priv-$DROPLET"
-	echo
+	create_droplet $DROPLET $REGION $DROPLET "priv-$DROPLET"
 else
 	echo "Aborted by user."
 fi

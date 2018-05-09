@@ -32,6 +32,33 @@ scrape_configs:
     static_configs:
       - targets: ['$BROKER_PRIVATE_FQDN:8080']
 
+    metric_relabel_configs:
+      # Relabel: topic=ztf_20180425_programid2 -> night=20180425, program=MSIP
+      - source_labels: [ topic ]
+        regex: "ztf_(\\d+)_.*"
+        target_label: "night"
+        replacement: "$1"
+      - source_labels: [ topic ]
+        regex: "ztf_\\d+_programid1"
+        target_label: "program"
+        replacement: "MSIP"
+      - source_labels: [ topic ]
+        regex: "ztf_\\d+_programid2"
+        target_label: "program"
+        replacement: "ZTF"
+
+  - job_name: 'mirrormaker'
+    static_configs:
+      - targets: ['$BROKER_PRIVATE_FQDN:8081']
+
+  - job_name: 'zookeeper'
+    static_configs:
+      - targets: ['$BROKER_PRIVATE_FQDN:8082']
+
   - job_name: 'kafka-node'
     static_configs:
       - targets: ['$BROKER_PRIVATE_FQDN:9100']
+
+  - job_name: 'grafana-node'
+    static_configs:
+      - targets: ['localhost:9100']

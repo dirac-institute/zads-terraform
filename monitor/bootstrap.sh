@@ -39,11 +39,11 @@ echo "/swapfile   swap    swap    sw  0   0" >> /etc/fstab
 swapon -a
 
 #
-# Prometheus node exporter (bind to private addres, port 9100)
+# Prometheus local node exporter (bind to localhost, port 9100)
 #
 curl -s https://packagecloud.io/install/repositories/prometheus-rpm/release/script.rpm.sh | bash
 yum install -y node_exporter
-echo "NODE_EXPORTER_OPTS='--web.listen-address private:9100'" > /etc/default/node_exporter
+echo "NODE_EXPORTER_OPTS='--web.listen-address localhost:9100'" > /etc/default/node_exporter
 systemctl start node_exporter
 
 #
