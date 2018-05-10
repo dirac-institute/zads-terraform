@@ -52,7 +52,8 @@ systemctl start node_exporter
 yum install -y prometheus2
 mkdir -p /etc/prometheus
 cp_with_subst config/prometheus.yml /etc/prometheus/prometheus.yml BROKER_PRIVATE_FQDN
-#echo "PROMETHEUS_OPTS='--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/var/lib/prometheus/data --web.listen-address localhost:9090'" > /etc/default/prometheus
+## TODO: Find a long-term solution for storing prometheus logs (see https://prometheus.io/docs/prometheus/latest/storage/)
+echo "PROMETHEUS_OPTS='--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/var/lib/prometheus/data --storage.tsdb.retention=180d'" > /etc/default/prometheus
 
 systemctl daemon-reload
 systemctl start prometheus
@@ -84,6 +85,9 @@ systemctl enable httpd
 #
 #dry run:    certbot --apache -d monitor.ztf.mjuric.org --dry-run -m "mjuric@uw.edu" -n certonly
 #real thing: certbot --apache -d monitor.ztf.mjuric.org -m "mjuric@uw.edu" -n certonly --agree-tos
+
+#certbot --apache -d status.ztf.mjuric.org -m "mjuric@uw.edu" -n certonly --agree-tos
+
 cp config/certbot /etc/cron.daily/certbot
 chmod +x /etc/cron.daily/certbot
 
