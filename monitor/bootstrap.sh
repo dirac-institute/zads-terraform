@@ -77,6 +77,11 @@ firewall-cmd --add-service=https --permanent
 firewall-cmd --list-all
 
 yum install httpd mod_ssl python-certbot-apache -y
+
+GRAFANA_FQDN=status.ztf.mjuric.org
+cp_with_subst config/main.conf /etc/httpd/conf.d GRAFANA_FQDN
+cp_with_subst config/ssl.conf /etc/httpd/conf.d GRAFANA_FQDN
+
 systemctl start httpd
 systemctl enable httpd
 
