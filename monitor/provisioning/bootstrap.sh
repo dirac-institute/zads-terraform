@@ -6,13 +6,25 @@
 
 set -xe
 
+# grab command line arguments
+GRAFANA_FQDN="$1"
+BROKER_PRIVATE_FQDN="$2"
+
+#
+# Basic provisioning
+#
+yum -d1 -y install epel-release
+rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+yum -d1 -y install joe iftop screen bind-utils telnet git
+
+##
+
 . functions.sh
-. config/bootstrap
 
 #
 # set up firewall and enable it
 #
-yum -y install firewalld
+yum -d1 -y install firewalld
 
 firewall-offline-cmd --zone=public --change-interface=eth0
 firewall-offline-cmd --zone=trusted --change-interface=eth1
@@ -42,14 +54,14 @@ swapon -a
 # Prometheus local node exporter (bind to localhost, port 9100)
 #
 curl -s https://packagecloud.io/install/repositories/prometheus-rpm/release/script.rpm.sh | bash
-yum install -y node_exporter
+yum -d1 install -y node_exporter
 echo "NODE_EXPORTER_OPTS='--web.listen-address localhost:9100'" > /etc/default/node_exporter
 systemctl start node_exporter
 
 #
 # Install and set up Prometheus
 #
-yum install -y prometheus2
+yum -d1 install -y prometheus2
 mkdir -p /etc/prometheus
 cp_with_subst config/prometheus.yml /etc/prometheus/prometheus.yml BROKER_PRIVATE_FQDN
 ## TODO: Find a long-term solution for storing prometheus logs (see https://prometheus.io/docs/prometheus/latest/storage/)
@@ -62,17 +74,16 @@ systemctl start prometheus
 # Install and set up Grafana
 #
 cp config/grafana.repo /etc/yum.repos.d/grafana.repo
-yum install -y grafana
+yum -d1 install -y grafana
 
-GRAFANA_FQDN=status.ztf.mjuric.org
 cp_with_subst config/grafana.ini /etc/grafana/grafana.ini GRAFANA_FQDN
 
-if [[ -f data/var-lib-grafana.tar.gz ]]; then
+if [[ -f secrets/var-lib-grafana.tar.gz ]]; then
 	#
 	# Restore from an existing data backup
 	#
 	mv /var/lib/grafana /var/lib/grafana.orig
-	tar xzvf data/var-lib-grafana.tar.gz -C /
+	tar xzvf secrets/var-lib-grafana.tar.gz -C /
 else
 	#
 	# Provision new
@@ -86,7 +97,7 @@ else
 	echo "Grafana admin password: $ADMINPASS"
 
 	systemctl stop grafana-server
-	tar czvf data/var-lib-grafana.tar.gz /var/lib/grafana
+	tar czvf secrets/var-lib-grafana.tar.gz /var/lib/grafana
 fi
 
 systemctl start grafana-server
@@ -100,7 +111,7 @@ firewall-cmd --add-service=http --permanent
 firewall-cmd --add-service=https --permanent
 firewall-cmd --list-all
 
-yum install httpd mod_ssl python-certbot-apache -y
+yum -d1 install httpd mod_ssl python-certbot-apache -y
 setsebool -P httpd_can_network_connect=true
 
 cp_with_subst config/main.conf /etc/httpd/conf.d/main.conf GRAFANA_FQDN
@@ -108,15 +119,16 @@ systemctl start httpd
 systemctl enable httpd
 
 #
-# Obtain a Let's Encrypt crtificate
+# Intall or obtain a Let's Encrypt SSL crtificate
 #
-if [[ -f data/private-ssl-keys.tar.gz ]]; then
+if [[ -f "secrets/etc-letsencrypt-$GRAFANA_FQDN.tar.gz" ]]; then
 	# Restore from saved certificates
-	tar xzvf data/private-ssl-keys.tar.gz -C /
+	tar xzvf "secrets/etc-letsencrypt-$GRAFANA_FQDN.tar.gz" -C /
 else
+	exit -1
 	# Generate new ones
-	certbot --apache -d status.ztf.mjuric.org -m "mjuric@uw.edu" -n certonly --agree-tos
-	tar czvf data/private-ssl-keys.tar.gz /etc/letsencrypt
+	certbot --apache -d "$GRAFANA_FQDN" -m "mjuric@uw.edu" -n certonly --agree-tos
+	tar czvf "secrets/etc-letsencrypt-$GRAFANA_FQDN".tar.gz /etc/letsencrypt
 fi
 
 cp_with_subst config/ssl.conf /etc/httpd/conf.d/ssl.conf GRAFANA_FQDN
