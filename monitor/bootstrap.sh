@@ -67,15 +67,21 @@ yum install -y grafana
 GRAFANA_FQDN=status.ztf.mjuric.org
 cp_with_subst config/grafana.ini /etc/grafana/grafana.ini GRAFANA_FQDN
 
-if [[ ! -f data/var-lib-grafana.tar.gz ]]; then
+if [[ -f data/var-lib-grafana.tar.gz ]]; then
+	#
+	# Restore from an existing data backup
+	#
 	mv /var/lib/grafana /var/lib/grafana.orig
 	tar xzvf data/var-lib-grafana.tar.gz -C /
 else
+	#
+	# Provision new
+	#
 	echo "No old grafana data found. Provisioning new install"
 	systemctl start grafana-server
 
 	ADMINPASS=$(openssl rand -base64 8 | tr -d =)
-	curl -X PUT -H "Content-Type: application/json" -d '{ "oldPassword": "admin", "newPassword": "$ADMINPASS", "confirmNew": "$ADMINPASS"}' \
+	curl -X PUT -H "Content-Type: application/json" -d '{ "oldPassword": "admin", "newPassword": "'"$ADMINPASS"'", "confirmNew": "'"$ADMINPASS"'"}' \
 		http://admin:admin@localhost:3000/api/user/password
 	echo "Grafana admin password: $ADMINPASS"
 
@@ -104,13 +110,13 @@ systemctl enable httpd
 #
 # Obtain a Let's Encrypt crtificate
 #
-if [[ ! -f private-ssl-keys.tar.gz ]]; then
+if [[ -f data/private-ssl-keys.tar.gz ]]; then
+	# Restore from saved certificates
+	tar xzvf data/private-ssl-keys.tar.gz -C /
+else
 	# Generate new ones
 	certbot --apache -d status.ztf.mjuric.org -m "mjuric@uw.edu" -n certonly --agree-tos
-	tar czvf private-ssl-keys.tar.gz /etc/letsencrypt
-else
-	# Restore from saved file
-	tar xzvf private-ssl-keys.tar.gz -C /
+	tar czvf data/private-ssl-keys.tar.gz /etc/letsencrypt
 fi
 
 cp_with_subst config/ssl.conf /etc/httpd/conf.d/ssl.conf GRAFANA_FQDN
@@ -122,7 +128,7 @@ chmod +x /etc/cron.daily/certbot
 
 
 #
-# Set up kafkacat, to ease debugging
+# Install kafkacat, to ease debugging
 #
 curl -L http://research.majuric.org/other/kafkacat -o /usr/local/bin/kafkacat
 chmod +x /usr/local/bin/kafkacat
