@@ -67,6 +67,14 @@ cp_with_subst config/prometheus.yml /etc/prometheus/prometheus.yml BROKER_PRIVAT
 ## TODO: Find a long-term solution for storing prometheus logs (see https://prometheus.io/docs/prometheus/latest/storage/)
 echo "PROMETHEUS_OPTS='--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/var/lib/prometheus/data --storage.tsdb.retention=180d'" > /etc/default/prometheus
 
+if [[ -f secrets/var-lib-prometheus.tar.gz ]]; then
+	#
+	# Restore from an existing data backup
+	#
+	mv /var/lib/prometheus /var/lib/prometheus.orig
+	tar xzvf secrets/var-lib-prometheus.tar.gz -C /
+fi
+
 systemctl daemon-reload
 systemctl start prometheus
 
@@ -95,9 +103,6 @@ else
 	curl -X PUT -H "Content-Type: application/json" -d '{ "oldPassword": "admin", "newPassword": "'"$ADMINPASS"'", "confirmNew": "'"$ADMINPASS"'"}' \
 		http://admin:admin@localhost:3000/api/user/password
 	echo "Grafana admin password: $ADMINPASS"
-
-	systemctl stop grafana-server
-	tar czvf secrets/var-lib-grafana.tar.gz /var/lib/grafana
 fi
 
 systemctl start grafana-server
@@ -128,7 +133,6 @@ else
 	exit -1
 	# Generate new ones
 	certbot --apache -d "$GRAFANA_FQDN" -m "mjuric@uw.edu" -n certonly --agree-tos
-	tar czvf "secrets/etc-letsencrypt-$GRAFANA_FQDN".tar.gz /etc/letsencrypt
 fi
 
 cp_with_subst config/ssl.conf /etc/httpd/conf.d/ssl.conf GRAFANA_FQDN
