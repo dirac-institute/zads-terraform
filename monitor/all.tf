@@ -9,6 +9,84 @@ provider "digitalocean" {
   token = "${var.do_token}"
 }
 
+###########################
+
+resource "digitalocean_droplet" "broker" {
+  image = "centos-7-x64"
+  name = "alerts.ztf.mjuric.org"
+  region = "sfo2"
+  size = "s-6vcpu-16gb"
+  private_networking = true
+  ipv6 = true
+  monitoring = true
+  ssh_keys = [
+    "${var.ssh_fingerprint}"
+  ]
+}
+
+resource "digitalocean_record" "broker" {
+  domain = "${digitalocean_domain.default.name}"
+  type   = "A"
+  name   = "alerts"
+  value  = "${digitalocean_droplet.broker.ipv4_address}"
+  ttl    = "5"
+}
+
+resource "digitalocean_record" "broker_priv" {
+  domain = "${digitalocean_domain.default.name}"
+  type   = "A"
+  name   = "priv-alerts"
+  value  = "${digitalocean_droplet.broker.ipv4_address_private}"
+  ttl    = "5"
+}
+
+resource "digitalocean_record" "brokerAAAA" {
+  domain = "${digitalocean_domain.default.name}"
+  type   = "AAAA"
+  name   = "alerts"
+  value  = "${digitalocean_droplet.broker.ipv6_address}"
+  ttl    = "5"
+}
+
+resource "null_resource" "broker_provisioning" {
+  connection {
+    user = "root"
+    type = "ssh"
+    agent = true
+    timeout = "2m"
+    host = "${digitalocean_record.broker.fqdn}"
+  }
+
+  # upload configs
+  provisioner "file" {
+    source      = "${var.broker_confdir}/provisioning"
+    destination = "/root"
+  }
+
+  # upload secrets and state
+  provisioner "file" {
+    source      = "${var.broker_confdir}/data/latest"
+    destination = "/root/provisioning/secrets"
+  }
+
+  # run provisioner
+  provisioner "remote-exec" {
+    inline = [
+      "export PATH=$PATH:/usr/bin",
+      "cd /root/provisioning",
+      "bash ./bootstrap.sh"
+    ]
+  }
+
+#  # download state before destruction
+#  provisioner "local-exec" {
+#    when = "destroy"
+#    command = "cd ${var.broker_confdir} && bash provisioning/save-state.sh ${digitalocean_record.broker.fqdn}"
+#  }
+}
+
+###########################
+
 resource "digitalocean_droplet" "monitor" {
 
   image = "centos-7-x64"
@@ -82,15 +160,15 @@ resource "null_resource" "monitor_provisioning" {
     inline = [
       "export PATH=$PATH:/usr/bin",
       "cd /root/provisioning",
-      "bash ./bootstrap.sh ${digitalocean_record.monitor.fqdn} priv-zads.ztf.mjuric.org"
+      "bash ./bootstrap.sh ${digitalocean_record.monitor.fqdn} ${digitalocean_record.broker_priv.fqdn} "
     ]
   }
 
   # download state before destruction
-  provisioner "local-exec" {
-    when = "destroy"
-    command = "cd ${var.monitor_confdir} && bash provisioning/save-state.sh ${digitalocean_record.monitor.fqdn}"
-  }
+#  provisioner "local-exec" {
+#    when = "destroy"
+#    command = "cd ${var.monitor_confdir} && bash provisioning/save-state.sh ${digitalocean_record.monitor.fqdn}"
+#  }
 }
 
 resource "null_resource" "monitor_state" {

@@ -1,0 +1,16 @@
+[Unit]
+Description=Apache Kafka - ZooKeeper
+Documentation=http://docs.confluent.io/
+After=network.target
+
+[Service]
+Type=simple
+User=cp-kafka
+Group=confluent
+Environment='KAFKA_OPTS=-javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent.jar=private:8082:/etc/jmx_exporter/zookeeper.yml'
+ExecStart=/usr/bin/zookeeper-server-start /etc/kafka/zookeeper.properties
+TimeoutStopSec=180
+Restart=no
+
+[Install]
+WantedBy=multi-user.target

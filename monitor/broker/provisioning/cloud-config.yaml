@@ -1,0 +1,31 @@
+#cloud-config
+
+# log all cloud-init process output (info & errors) to a logfile
+output: {all: ">> /var/log/cloud-init-output.log"}
+
+# final_message written to log when cloud-init processes are finished
+final_message: "System boot (via cloud-init) is COMPLETE, after $UPTIME seconds. Finished at $TIMESTAMP"
+
+users:
+  - name: root
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA3xX1xMZUPVZIEO/kAkHi8vECXYbNRbGgGhiDgFKIJRXsRBzBaauNQGEPHkY+MuqBnOWUg6msyXcPtTKmXSsnADrvi15Ujy5UARCIw8KscIvKNL4iLP/fVrmMgQB3Kr9UpVCwycFu/Bx8wwljtube0fOIZRFrxKV0wzOAsmYGzh2E2bUxvYvvWPCDJk3NoaOwnS0bKwzuP3aSxVNZPdm9X8Pyc7/eYullIG9HQk5MIsbfc5nypd8f83Kt2/s4D+TqkGeTc/KZHQa38J0CB0nQo4BzqTDelgiWEOyfrOBtIZ/tCAyLY4XnGl8/94kAneo58QkYVLeihYNc5IGdNSQRYQ== mjuric@caladan.astro.Princeton.EDU
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDCCfQtMjMC3DLE5HB+s9rGSCNmD9UXx6Sg/F+PBqJJwkLg2jgvTep0NZcM/4JEymIQ4L9dskIC0uG3oY77QWMfqI5dKB1jknScC+n/h3gyGoDhnInK9pz86dRNft7WJqTEfKyLpBbmz/mu3nZz+ZHaIcZDeTrA785bAksGUfS0SKOp6qhGY5bEmw63jnEmu/b0tNw3kdBDceH1xN1kH9/JIztwyvIDDXF9FgDXU/xuDMyYiVTDpDv2qWfw/SnUi4KiDBTytKXtOXU98c7Fe19otsFdBQo4bp8u4lgv28m3ye0A9hjI6ir0AS3D9tc0iUVoK68D43sTWqkxBVerjckCfdLu4oQERX1adHfY7zz2GuvsttENJ8Tljk+iFUVOXLFTlUODkou3UC3InfD9QW+ctRoNxeu1ulMdMXG0vWtwr2sPwGtayX12rqinCqNaDSRE4I5ncZSkuKKxt1csj3QWe9kbcEoUxdxY+d9FWgtou2MEeyJ9+wEAAfH639q0CuBKssttdzfWsrW9YG7M81zmHTK/EpsZsBIqqHcCAcvQIZ5wQAO+mRSdjoKzqWTIZU5qesSwsfIHiB7ix8dVzI7GY/tl5gDyP5t759DBrrkleZjC6IB6TZd+Wm5mdy2r2UwWr7smPMV/IQyYGaAF+sWFXvbysxzDHlNijU9fvnuk6w== maria.t.patterson@gmail.com
+
+ssh_pwauth: False
+chpasswd:
+  list: |
+    root:RANDOM
+  expire: False
+
+runcmd:
+  - chown 600 /var/log/cloud-init-output.log
+  - yum -y install epel-release
+  - rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
+  - yum -y install joe iftop screen bind-utils telnet
+  - yum -y install git
+  - cd /root
+  - git clone https://github.com/mjuric/ztf-alert-tools.git
+  - cd ztf-alert-tools/digitalocean
+  - git checkout single-server
+#  - bash ./bootstrap.sh
