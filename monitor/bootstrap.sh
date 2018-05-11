@@ -64,8 +64,26 @@ systemctl start prometheus
 cp config/grafana.repo /etc/yum.repos.d/grafana.repo
 yum install -y grafana
 
+GRAFANA_FQDN=status.ztf.mjuric.org
+cp_with_subst config/grafana.ini /etc/grafana/grafana.ini GRAFANA_FQDN
+
+if [[ ! -f data/var-lib-grafana.tar.gz ]]; then
+	mv /var/lib/grafana /var/lib/grafana.orig
+	tar xzvf data/var-lib-grafana.tar.gz -C /
+else
+	echo "No old grafana data found. Provisioning new install"
+	systemctl start grafana-server
+
+	ADMINPASS=$(openssl rand -base64 8 | tr -d =)
+	curl -X PUT -H "Content-Type: application/json" -d '{ "oldPassword": "admin", "newPassword": "$ADMINPASS", "confirmNew": "$ADMINPASS"}' \
+		http://admin:admin@localhost:3000/api/user/password
+	echo "Grafana admin password: $ADMINPASS"
+
+	systemctl stop grafana-server
+	tar czvf data/var-lib-grafana.tar.gz /var/lib/grafana
+fi
+
 systemctl start grafana-server
-systemctl status grafana-server
 
 #
 # Install Apache for proxying to the world
@@ -77,28 +95,31 @@ firewall-cmd --add-service=https --permanent
 firewall-cmd --list-all
 
 yum install httpd mod_ssl python-certbot-apache -y
+setsebool -P httpd_can_network_connect=true
 
-GRAFANA_FQDN=status.ztf.mjuric.org
-cp_with_subst config/main.conf /etc/httpd/conf.d GRAFANA_FQDN
-cp_with_subst config/ssl.conf /etc/httpd/conf.d GRAFANA_FQDN
-
+cp_with_subst config/main.conf /etc/httpd/conf.d/main.conf GRAFANA_FQDN
 systemctl start httpd
 systemctl enable httpd
 
 #
 # Obtain a Let's Encrypt crtificate
 #
-#dry run:    certbot --apache -d monitor.ztf.mjuric.org --dry-run -m "mjuric@uw.edu" -n certonly
-#real thing: certbot --apache -d monitor.ztf.mjuric.org -m "mjuric@uw.edu" -n certonly --agree-tos
+if [[ ! -f private-ssl-keys.tar.gz ]]; then
+	# Generate new ones
+	certbot --apache -d status.ztf.mjuric.org -m "mjuric@uw.edu" -n certonly --agree-tos
+	tar czvf private-ssl-keys.tar.gz /etc/letsencrypt
+else
+	# Restore from saved file
+	tar xzvf private-ssl-keys.tar.gz -C /
+fi
 
-#certbot --apache -d status.ztf.mjuric.org -m "mjuric@uw.edu" -n certonly --agree-tos
+cp_with_subst config/ssl.conf /etc/httpd/conf.d/ssl.conf GRAFANA_FQDN
+systemctl restart httpd
 
+# automate certificate renewal
 cp config/certbot /etc/cron.daily/certbot
 chmod +x /etc/cron.daily/certbot
 
-cp config/ssl.conf /etc/httpd/conf.d/ssl.conf
-
-setsebool -P httpd_can_network_connect=true
 
 #
 # Set up kafkacat, to ease debugging
