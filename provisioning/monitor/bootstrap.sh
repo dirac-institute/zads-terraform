@@ -8,62 +8,37 @@ set -xe
 
 # grab command line arguments
 GRAFANA_FQDN="$1"
-BROKER_PRIVATE_FQDN="$2"
+BROKER_IP="$2"
+
+. common/functions.sh
+. common/standard-config.sh
+. common/add-swap.sh 2048
 
 #
-# Basic provisioning
+# make the private network trusted
 #
-yum -d1 -y install epel-release
-rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
-yum -d1 -y install joe iftop screen bind-utils telnet git
-
-##
-
-. functions.sh
-
-#
-# set up firewall and enable it
-#
-yum -d1 -y install firewalld
-
-firewall-offline-cmd --zone=public --change-interface=eth0
 firewall-offline-cmd --zone=trusted --change-interface=eth1
-
-systemctl start firewalld
-systemctl enable firewalld
+systemctl restart firewalld
 
 #
-# set up inernal hostnames
+# Make the broker discoverable by name
 #
-PUBLIC_IP=$(ifconfig eth0 | grep "inet " | awk '{print $2}')
-PRIVATE_IP=$(ifconfig eth1 | grep "inet " | awk '{print $2}')
-echo "# Shortcuts used in config files" >> /etc/hosts
-echo "$PUBLIC_IP public" >> /etc/hosts
-echo "$PRIVATE_IP private" >> /etc/hosts
-
-#
-# Add swap space, just in case
-#
-dd if=/dev/zero of=/swapfile count=4 bs=512MiB
-chmod 600 /swapfile
-mkswap /swapfile
-echo "/swapfile   swap    swap    sw  0   0" >> /etc/fstab
-swapon -a
+echo "$BROKER_IP broker" >> /etc/hosts
 
 #
 # Prometheus local node exporter (bind to localhost, port 9100)
 #
 curl -s https://packagecloud.io/install/repositories/prometheus-rpm/release/script.rpm.sh | bash
-yum -d1 install -y node_exporter
+yum install node_exporter
 echo "NODE_EXPORTER_OPTS='--web.listen-address localhost:9100'" > /etc/default/node_exporter
 systemctl start node_exporter
 
 #
 # Install and set up Prometheus
 #
-yum -d1 install -y prometheus2
+yum install prometheus2
 mkdir -p /etc/prometheus
-cp_with_subst config/prometheus.yml /etc/prometheus/prometheus.yml BROKER_PRIVATE_FQDN
+cp config/prometheus.yml /etc/prometheus/prometheus.yml
 ## TODO: Find a long-term solution for storing prometheus logs (see https://prometheus.io/docs/prometheus/latest/storage/)
 echo "PROMETHEUS_OPTS='--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/var/lib/prometheus/data --storage.tsdb.retention=180d'" > /etc/default/prometheus
 
@@ -82,7 +57,7 @@ systemctl start prometheus
 # Install and set up Grafana
 #
 cp config/grafana.repo /etc/yum.repos.d/grafana.repo
-yum -d1 install -y grafana
+yum install grafana
 
 cp_with_subst config/grafana.ini /etc/grafana/grafana.ini GRAFANA_FQDN
 
@@ -116,7 +91,7 @@ firewall-cmd --add-service=http --permanent
 firewall-cmd --add-service=https --permanent
 firewall-cmd --list-all
 
-yum -d1 install httpd mod_ssl python-certbot-apache -y
+yum install httpd mod_ssl python-certbot-apache
 setsebool -P httpd_can_network_connect=true
 
 cp_with_subst config/main.conf /etc/httpd/conf.d/main.conf GRAFANA_FQDN

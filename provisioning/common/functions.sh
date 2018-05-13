@@ -14,3 +14,8 @@ cp_with_subst()
 	done
 }
 
+# Override yum to automatically say 'yes' and be less verbose
+yum()
+{
+	/usr/bin/yum -y -d1 "$@"
+}

@@ -1,3 +1,0 @@
-[Unit]
-Description=ZTF Kafka Alert Broker Cluster
-AllowIsolate=no

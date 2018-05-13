@@ -6,47 +6,19 @@
 
 set -xe
 
-#
-# Basic provisioning
-#
-yum -d1 -y install epel-release
-rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7
-yum -d1 -y install joe iftop screen bind-utils telnet git
+GROUP_ID="$1"
 
-##
-
-. functions.sh
+. common/functions.sh
+. common/standard-config.sh
+. common/add-swap.sh 8192
 
 #
-# set up firewall and enable it
+# Add kafka and trusted zones to firewall
 #
-yum -d1 -y install firewalld
-
 cp config/kafka.xml /etc/firewalld/services/
 cp config/ztf-trusted.xml /etc/firewalld/zones/
-firewall-offline-cmd --zone=public --change-interface=eth0
 firewall-offline-cmd --zone=trusted --change-interface=eth1
-
-systemctl start firewalld
-systemctl enable firewalld
-
-#
-# set up inernal hostnames
-#
-PUBLIC_IP=$(ifconfig eth0 | grep "inet " | awk '{print $2}')
-PRIVATE_IP=$(ifconfig eth1 | grep "inet " | awk '{print $2}')
-echo "# Shortcuts used in config files" >> /etc/hosts
-echo "$PUBLIC_IP public" >> /etc/hosts
-echo "$PRIVATE_IP private" >> /etc/hosts
-
-#
-# Add swap space, just in case
-#
-dd if=/dev/zero of=/swapfile count=16 bs=512MiB
-chmod 600 /swapfile
-mkswap /swapfile
-echo "/swapfile   swap    swap    sw  0   0" >> /etc/fstab
-swapon -a
+systemctl restart firewalld
 
 #
 # Prometheus JMX exporter, for exporting JVM (JMX) metrics from kafka and mirrormaker
@@ -61,7 +33,7 @@ cp config/{zookeeper,kafka,mirrormaker}.yml /etc/jmx_exporter
 # Prometheus node exporter (bind to private addres, port 9100)
 #
 curl -s https://packagecloud.io/install/repositories/prometheus-rpm/release/script.rpm.sh | bash
-yum -d1 install -y node_exporter
+yum install node_exporter
 echo "NODE_EXPORTER_OPTS='--web.listen-address private:9100'" > /etc/default/node_exporter
 systemctl start node_exporter
 
@@ -70,8 +42,8 @@ systemctl start node_exporter
 #
 rpm --import https://packages.confluent.io/rpm/4.1/archive.key
 cp config/confluent.repo /etc/yum.repos.d
-yum -d1 install -y java
-yum -d1 install -y confluent-kafka-2.11
+yum install java
+yum install confluent-kafka-2.11
 
 #
 # ZOOKEEPER
@@ -88,8 +60,9 @@ cp config/ztf-alerts.service /etc/systemd/system/ztf-alerts.service
 #
 # MIRROR-MAKER
 #
-mkdir /etc/ztf
-cp config/{consumer,producer}.properties /etc/ztf
+mkdir -p /etc/ztf
+cp config/producer.properties /etc/ztf
+cp_with_subst config/consumer.properties /etc/ztf/consumer.properties GROUP_ID
 cp config/ztf-mirrormaker.service /etc/systemd/system/
 
 systemctl daemon-reload
