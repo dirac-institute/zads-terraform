@@ -8,6 +8,11 @@ yum clean all
 yum install deltarpm
 
 #
+# Update the image
+#
+yum update
+
+#
 # Basic provisioning
 #
 yum install epel-release

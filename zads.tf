@@ -9,15 +9,20 @@ variable "domain"           { default = "test.ztf.mjuric.org" } # The domain nam
 								# The default will create machines in the test domain; override on the command line
 								# to create in the production domain (ztf.mjuric.org).
 
-## You should rarely override these:
+variable "state_dir" { default = "state" }			# The directory with saved state for the machines. The provisioners expect to
+								# find data in ${state_dir}/${resource_name}/latest. What's in there depends on
+								# the particular droplet's bootstrap.sh, but it's usually tarballs with state or
+								# secrets that can't go into the config/ directory.
+
+##
+## You should rarely need to override these:
+##
 
 variable "broker_size" { default = "s-6vcpu-16gb" }		# Digital Ocean instance type for the broker machine
 variable "monitor_size" { default = "s-1vcpu-1gb" }		# Digital Ocean instance type for the monitor machine
 
 variable "broker_hostname"  { default = "alerts" }              # hostname of the broker
 variable "monitor_hostname" { default = "status" }              # hostname of the monitor
-
-variable "state_dir" { default = "state" }			# The directory with saved state for the machines
 
 #
 # Fingerprint of the key to use for SSH-ing into the newly created machines.
@@ -26,6 +31,9 @@ variable "state_dir" { default = "state" }			# The directory with saved state fo
 variable "ssh_fingerprint" { default = "57:c0:dd:35:2a:06:67:d1:15:ba:6a:74:4d:7c:1c:21" }
 
 #################################################################################
+#
+# Compute useful local variables, set up DO provider, domain
+#
 
 locals {
   broker_fqdn  = "${var.broker_hostname}.${var.domain}"
@@ -41,6 +49,8 @@ resource "digitalocean_domain" "default" {
    ip_address = ""
 
    lifecycle {
+     # This is to prevent accidentally destroying the whole (sub)domain; there
+     # may be other entries in it that are not managed by terraform.
      prevent_destroy = true
    }
 }
@@ -52,9 +62,6 @@ resource "digitalocean_domain" "default" {
 #
 #################################################################################
 
-#
-# This creates and provisions the broker VM
-#
 resource "digitalocean_droplet" "broker" {
   image = "centos-7-x64"
   name = "${local.broker_fqdn}"
@@ -88,6 +95,7 @@ resource "digitalocean_droplet" "broker" {
     ]
   }
 
+# WORK IN PROGRESS...
 #  # download state before destruction
 #  provisioner "local-exec" {
 #    when = "destroy"
@@ -95,7 +103,6 @@ resource "digitalocean_droplet" "broker" {
 #  }
 }
 
-# The DNS IPv4 record for the broker machine, public network interface
 resource "digitalocean_record" "broker" {
   domain = "${digitalocean_domain.default.name}"
   type   = "A"
@@ -104,7 +111,6 @@ resource "digitalocean_record" "broker" {
   ttl    = "5"
 }
 
-# The DNS IPv6 record for the broker machine, public network interface
 resource "digitalocean_record" "brokerAAAA" {
   domain = "${digitalocean_domain.default.name}"
   type   = "AAAA"
@@ -113,7 +119,12 @@ resource "digitalocean_record" "brokerAAAA" {
   ttl    = "5"
 }
 
-###########################
+#################################################################################
+#
+#  The status monitoring machine (collects metrics from broker into
+#  Prometheus, displays them using grafana).
+#
+#################################################################################
 
 resource "digitalocean_droplet" "monitor" {
 
@@ -147,7 +158,8 @@ resource "digitalocean_droplet" "monitor" {
     destination = "/root/provisioning/secrets"
   }
 
-  # download state before destruction
+# WORK IN PROGRESS...
+#  # download state before destruction
 #  provisioner "local-exec" {
 #    when = "destroy"
 #    command = "cd ${var.state_dir}/monitor && bash ${path.root}/provisioning/monitor/save-state.sh ${local.monitor_fqdn}"
@@ -155,8 +167,9 @@ resource "digitalocean_droplet" "monitor" {
 }
 
 #
-# Monitor provisioner requires the DNS entries to be set up, so we run it
-# outside of the droplet resource entry.
+# Monitor provisioner requires the DNS entries to be set up (if it needs to
+# bootstrap Let's Encrypt certificates), so we run it outside of the droplet
+# resource entry.
 #
 resource "null_resource" "provision_monitor" {
 
@@ -192,26 +205,4 @@ resource "digitalocean_record" "monitorAAAA" {
   name   = "${var.monitor_hostname}"
   value  = "${digitalocean_droplet.monitor.ipv6_address}"
   ttl    = "5"
-}
-
-############################################################################
-# 
-# Debugging help
-#
-
-resource "null_resource" "monitor_state" {
-  count = 0
-
-  connection {
-    user = "root"
-    type = "ssh"
-    agent = true
-    timeout = "2m"
-    host = "${digitalocean_record.monitor.fqdn}"
-  }
-
-  provisioner "local-exec" {
-#    when = "destroy"
-    command = "bash provisioning/save-state.sh ${digitalocean_record.monitor.fqdn}"
-  }
 }
