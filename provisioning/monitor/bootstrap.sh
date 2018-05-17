@@ -42,12 +42,12 @@ cp config/prometheus.yml /etc/prometheus/prometheus.yml
 ## TODO: Find a long-term solution for storing prometheus logs (see https://prometheus.io/docs/prometheus/latest/storage/)
 echo "PROMETHEUS_OPTS='--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/var/lib/prometheus/data --storage.tsdb.retention=180d'" > /etc/default/prometheus
 
-if [[ -f secrets/var-lib-prometheus.tar.gz ]]; then
+if [[ -f backups/var-lib-prometheus.tar.gz ]]; then
 	#
 	# Restore from an existing data backup
 	#
 	mv /var/lib/prometheus /var/lib/prometheus.orig
-	tar xzvf secrets/var-lib-prometheus.tar.gz -C /
+	tar xzvf backups/var-lib-prometheus.tar.gz -C /
 fi
 
 systemctl daemon-reload
@@ -61,12 +61,12 @@ yum install grafana
 
 cp_with_subst config/grafana.ini /etc/grafana/grafana.ini GRAFANA_FQDN
 
-if [[ -f secrets/var-lib-grafana.tar.gz ]]; then
+if [[ -f backups/var-lib-grafana.tar.gz ]]; then
 	#
 	# Restore from an existing data backup
 	#
 	mv /var/lib/grafana /var/lib/grafana.orig
-	tar xzvf secrets/var-lib-grafana.tar.gz -C /
+	tar xzvf backups/var-lib-grafana.tar.gz -C /
 else
 	#
 	# Provision new
@@ -101,22 +101,29 @@ systemctl enable httpd
 #
 # Intall or obtain a Let's Encrypt SSL crtificate
 #
-if [[ -f "secrets/etc-letsencrypt-$GRAFANA_FQDN.tar.gz" ]]; then
+if [[ -f "backups/etc-letsencrypt-$GRAFANA_FQDN.tar.gz" ]]; then
 	# Restore from saved certificates
-	tar xzvf "secrets/etc-letsencrypt-$GRAFANA_FQDN.tar.gz" -C /
+	tar xzvf "backups/etc-letsencrypt-$GRAFANA_FQDN.tar.gz" -C /
+	cp_with_subst config/ssl.conf /etc/httpd/conf.d/ssl.conf GRAFANA_FQDN
+	systemctl restart httpd
 else
-	exit -1
-	# Generate new ones
-	certbot --apache -d "$GRAFANA_FQDN" -m "mjuric@uw.edu" -n certonly --agree-tos
+	echo "**************************************************"
+	echo "**************************************************"
+	echo "**************************************************"
+	echo
+	echo "There were no Let's Encrypt certificates available to restore from backups."
+	echo "To generate new ones, log in as root and run:"
+	echo
+	echo "  bash $PWD/letsencrypt.sh '$GRAFANA_FQDN'"
+	echo
+	echo "**************************************************"
+	echo "**************************************************"
+	echo "**************************************************"
 fi
-
-cp_with_subst config/ssl.conf /etc/httpd/conf.d/ssl.conf GRAFANA_FQDN
-systemctl restart httpd
 
 # automate certificate renewal
 cp config/certbot /etc/cron.daily/certbot
 chmod +x /etc/cron.daily/certbot
-
 
 #
 # Install kafkacat, to ease debugging

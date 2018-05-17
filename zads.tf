@@ -5,14 +5,15 @@
 
 variable "do_token" {}						# Your Digital Ocean API access token
 
-variable "domain"           { default = "test.ztf.mjuric.org" } # The domain name of the broker. The domain must be under Digital Ocean DNS control.
+variable "domain"      { default = "test.ztf.mjuric.org" }      # The domain name of the broker. The domain must be under Digital Ocean DNS control.
 								# The default will create machines in the test domain; override on the command line
 								# to create in the production domain (ztf.mjuric.org).
 
-variable "state_dir" { default = "state" }			# The directory with saved state for the machines. The provisioners expect to
-								# find data in ${state_dir}/${resource_name}/latest. What's in there depends on
-								# the particular droplet's bootstrap.sh, but it's usually tarballs with state or
-								# secrets that can't go into the config/ directory.
+variable "backups_dir" { default = "/dev/null" }		# The directory with saved backups for the machines. The provisioners can restore
+								# these automatically (and avoid some initialization). The provisioners expect to
+								# find data in ${backups_dir}/${resource_name}/latest. What's in there depends on
+								# the particular droplet's bootstrap.sh, but it's usually tarballs to be untarred
+								# into /.
 
 ##
 ## You should rarely need to override these:
@@ -74,16 +75,17 @@ resource "digitalocean_droplet" "broker" {
     "${var.ssh_fingerprint}"
   ]
 
-  # upload configs (these are versioned in git)
+  # upload provisioning scripts and configs
   provisioner "file" {
     source      = "provisioning/broker"
     destination = "/root/provisioning"
   }
 
-  # upload secrets and state data (these are kept in a more secure location)
+  # upload any backups to be restored
   provisioner "file" {
-    source      = "${var.state_dir}/broker/latest"
-    destination = "/root/provisioning/secrets"
+    on_failure  = "continue"
+    source      = "${var.backups_dir}/broker/latest"
+    destination = "/root/provisioning/backups"
   }
 
   # run the provisioner
@@ -94,13 +96,6 @@ resource "digitalocean_droplet" "broker" {
       "bash ./bootstrap.sh ${replace(local.broker_fqdn, ".", "-")}"
     ]
   }
-
-# WORK IN PROGRESS...
-#  # download state before destruction
-#  provisioner "local-exec" {
-#    when = "destroy"
-#    command = "cd ${var.broker_confdir} && bash provisioning/save-state.sh ${digitalocean_record.broker.fqdn}"
-#  }
 }
 
 resource "digitalocean_record" "broker" {
@@ -146,24 +141,18 @@ resource "digitalocean_droplet" "monitor" {
     timeout = "2m"
   }
 
-  # upload configs
+  # upload provisioning scripts and configs
   provisioner "file" {
     source      = "provisioning/monitor"
     destination = "/root/provisioning"
   }
 
-  # upload secrets and state
+  # upload any backups to be restored
   provisioner "file" {
-    source      = "${var.state_dir}/monitor/latest"
-    destination = "/root/provisioning/secrets"
+    on_failure  = "continue"
+    source      = "${var.backups_dir}/monitor/latest"
+    destination = "/root/provisioning/backups"
   }
-
-# WORK IN PROGRESS...
-#  # download state before destruction
-#  provisioner "local-exec" {
-#    when = "destroy"
-#    command = "cd ${var.state_dir}/monitor && bash ${path.root}/provisioning/monitor/save-state.sh ${local.monitor_fqdn}"
-#  }
 }
 
 #

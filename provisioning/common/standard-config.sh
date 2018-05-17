@@ -1,4 +1,9 @@
 #
+# Set timezone to PDT
+#
+timedatectl set-timezone America/Los_Angeles
+
+#
 # Disable fastestmirror -- very often it picks a slow (or invalid) mirror
 # on digitalocean. Instead go directly to berkeley.edu (a fast mirror).
 #
@@ -8,9 +13,19 @@ yum clean all
 yum install deltarpm
 
 #
-# Update the image
+# Update the base image
 #
 yum update
+
+#
+# Set up automatic updates ("patch Tuesday, every 8am").
+#
+cat > /etc/cron.d/yum-cron-tuesday <<-EOT
+	SHELL=/bin/bash
+	PATH=/sbin:/bin:/usr/sbin:/usr/bin
+	MAILTO=root
+	0 8 * * tue root  yum -y update >/dev/null
+EOT
 
 #
 # Basic provisioning
@@ -24,8 +39,9 @@ yum install joe iftop screen bind-utils telnet git
 #
 yum install firewalld
 firewall-offline-cmd --zone=public --change-interface=eth0
-systemctl start firewalld
+systemctl restart dbus # this helps aleviate the issue with 'ERROR: Exception DBusException: org.freedesktop.DBus.Error.AccessDenied: Connection ":1.32" is not allowed to own the service "org.fedoraproject.FirewallD1" due to security policies in the configuration file' when restarting the firewalld
 systemctl enable firewalld
+systemctl start firewalld
 
 #
 # set up inernal hostnames
