@@ -35,6 +35,22 @@ terraform apply -var "backups=/path/to/backups"
 
 (where `/path/to/backups` is the path where the backups are located).
 
+Once the VMs are created and provisioned, Kafka should be running at
+`alerts.test.ztf.mjuric.org:9092`, and Grafana monitoring dashboard should
+be visible at http://status.test.ztf.mjuric.org.
+
+To have a client access kafka, you'll need to log into the broker host and
+add your client's IP to the list of allowed IPs, e.g.:
+
+```
+$ firewall-cmd --zone=ztf-trusted --add-source=159.89.137.191
+$ firewall-cmd --zone=ztf-trusted --add-source=159.89.137.191 --permanent
+```
+
+To have MirrorMaker access the upstream broker (`epyc`, at the moment) and
+start receiving alerts, you'll need to log into `epyc` and whitelist its IP
+(with commands analogous to the above).
+
 ### Destroying a system
 
 ```
