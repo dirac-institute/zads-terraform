@@ -37,6 +37,14 @@ terraform destroy --target digitalocean_droplet.broker --target digitalocean_dro
 
 ## Details
 
+### Overview
+
+Begin by reviewing this [overview
+presentation](documentation/overview-presentation.pdf) from the ZTF Alert
+Distribution Readiness review.  It gives a high-level overview of the system
+implemented here, and other than the change from `cloud-init` to `terraform`
+it should be largely up-to-date.
+
 ### Architecture
 
 Terraform scripts included here spawn two VMs on Digital Ocean:
