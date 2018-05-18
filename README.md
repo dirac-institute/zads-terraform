@@ -2,30 +2,113 @@
 
 ## Prerequisites
 
-* Terraform (`brew install terraform`)
+* [Terraform](https://www.terraform.io/intro/index.html) (`brew install terraform`, if
+  you're on a Mac)
 * Create a file named `do_token.auto.tfvars` with your Digital Ocean
   personal access token. For example:
 ```
 $ cat do_token.auto.tfvars
+$ cat terraform.tfvars
 do_token = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
 ```
-* Download the latest state to import into the brokers (the `data/`
-  directories and the `terraform.tfstate` file; location TBD).
+* Download the latest backups and terraform state data to import into the brokers (the
+  `backups/` directories and the `terraform.tfstate` file; location TBD on
+  epyc).
 
-## Importing the domain information
+## Quick Start
+### Importing the domain information
 
 ```
 terraform import digitalocean_domain.default ztf.mjuric.org
 ```
 
-## Building the alert broker
+### Building the alert broker
 
 ```
 terraform apply
 ```
 
-## Destroying the system
+### Destroying the system
 
 ```
 terraform destroy --target digitalocean_droplet.broker --target digitalocean_droplet.monitor
 ```
+
+## Details
+
+### Architecture
+
+Terraform scripts included here spawn two VMs on Digital Ocean:
+
+* The broker (named by default `alerts.test.ztf.mjuric.org`), running core
+  broker functionality (Zookeeper, Kafka, and MirrorMaker). This is the
+  machine that downstream brokers will be connecting to. By default, it is
+  an `s-6vcpu-16gb` instance (16384 RAM, 6 cores, 320 GB SSDs,
+  $80.00/month).
+
+* The status monitoring machine (named by default
+  `status.test.ztf.mjuric.org`), running the monitoring database
+  (Prometheus) and user interface (Grafana). This is the machine that ZADS
+  operators use for monitoring of the system, including automated alerting.
+  By default, it is an `s-1vcpu-1gb` instance (1024 RAM, 1 core, 25 GB SSDs,
+  $5.00/month).
+
+Both machines run CentOS 7.  Firewall is managed by `firewalld`.  Packages
+are managed by `yum`. SELinux is on. The system does not use containers.
+IPv6 is enabled. The machines use DO's weekly backup service (that retains up
+to four backups). Automatic updates via `yum` are enabled (every Tuesday, at
+8am Pacific Time).
+
+The machines have public IPV4 and IPV6 interfaces, and a private IPV4
+network running between them. The private interface is considered trusted
+(it's in the `trusted` `firewalld` zone; i.e., there are no firewall-imposed
+limitations on that interface). The private interface is meant to be used
+for all communication between the `monitor` and the `broker`. Traffic across
+this interface is not charged for. Traffic across the public interface is
+metered and charged for.
+
+### Creation and Variables
+
+Creation of the VMs and DNS entries is managed by `terraform`. All
+definitions are in `zads.tf` file. The configuration relies on a number of
+Terraform variables -- see the top of `zads.tf` for the variables and their
+documentations. The variables have safe defaults: by default, they will
+create VMs in a *test* subdomain (i.e., `test.ztf.mjuric.org`). To deploy
+into the operations domain, override the apropriate variables; i.e.:
+
+```
+terraform apply -var "domain=ztf.mjuric.org"
+```
+
+The config relies on a few variables that need to be kept secret (such as
+the [Digital Ocean personal access
+token](https://www.digitalocean.com/community/tutorials/how-to-use-the-digitalocean-api-v2)
+used to spawn/destroy VMs).  We recommend to keep these in a file named
+`do_token.auto.tfvars` (`.gitignore` is already set to ignore it, so you
+don't accidentally check it into git).
+
+### Provisioning
+
+After VM creation, `terraform` uploads the contents of
+`provisioning/<machine_name>` directory into `/root` on the machine.  It
+next uploads the contents of `${backup_dir}/<machine_name` into
+`/root/provisioning/backups` on the VM, if `${backup_dir}` exists. 
+Following these uploads, it `chdir`s into `/root/provisioning` and runs
+`bootstrap.sh` scripts with parameters as given in the `zads.tf` file.
+
+All provisioning is performed by the (host-specific) `bootstrap.sh` script.
+This is a bash script that uses `yum` to install the required packages, and
+also copies configuration files from `/root/provisioning/config` directory
+to their destinations.
+
+#### Software setup: `broker`
+
+TBD
+
+#### Software setup: `monitor`
+
+TBD
+
+### Security considerations
+
+TBD
