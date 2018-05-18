@@ -4,10 +4,10 @@
 
 ### Prerequisites
 
-* [Terraform](https://www.terraform.io/intro/index.html) (`brew install terraform`, if
+* Learn about and install [Terraform](https://www.terraform.io/intro/index.html) (`brew install terraform`, if
   you're on a Mac)
 * Create a file named `do_token.auto.tfvars` with your Digital Ocean
-  personal access token. For example:
+  [personal access token](https://www.digitalocean.com/community/tutorials/how-to-use-the-digitalocean-api-v2). For example:
 ```
 $ cat do_token.auto.tfvars
 $ cat terraform.tfvars
@@ -17,19 +17,25 @@ do_token = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
   `backups/` directories and the `terraform.tfstate` file; location TBD on
   epyc).
 
-### Importing the domain information
+### Standing up a system from scratch
 
 ```
+# Import the information about the domain where the hosts will reside
 terraform import digitalocean_domain.default test.ztf.mjuric.org
-```
 
-### Building the alert broker
-
-```
+# Create and provision the VMs
 terraform apply
 ```
 
-### Destroying the system
+or, if you have backups, replace the last command with:
+
+```
+terraform apply -var "backups=/path/to/backups"
+```
+
+(where `/path/to/backups` is the path where the backups are located).
+
+### Destroying a system
 
 ```
 terraform destroy --target digitalocean_droplet.broker --target digitalocean_droplet.monitor
