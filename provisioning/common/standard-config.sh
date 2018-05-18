@@ -4,6 +4,12 @@
 timedatectl set-timezone America/Los_Angeles
 
 #
+# We don't enable this on DO (if it's left enabled, then
+# `systemd status` reports the overall state as "degraded")
+#
+systemctl disable kdump
+
+#
 # Disable fastestmirror -- very often it picks a slow (or invalid) mirror
 # on digitalocean. Instead go directly to berkeley.edu (a fast mirror).
 #
