@@ -33,7 +33,7 @@ terraform apply
 or, if you have backups, replace the last command with:
 
 ```
-terraform apply -var "backups=/path/to/backups"
+terraform apply -var "backups_dir=/path/to/backups"
 ```
 
 (where `/path/to/backups` is the path where the backups are located).
