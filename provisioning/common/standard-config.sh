@@ -21,7 +21,7 @@ yum install deltarpm
 #
 # Update the base image
 #
-yum update
+#yum update
 
 #
 # Set up automatic updates ("patch Tuesday, every 8am").

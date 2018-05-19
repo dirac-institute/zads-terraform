@@ -19,6 +19,9 @@ do_token = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
 
 ### Standing up a system from scratch
 
+First, make sure you have the prerequisites installed and the DO token in
+`do_token.auto.tfvars` file, like discussed above. Then, run:
+
 ```
 # Import the information about the domain where the hosts will reside
 terraform import digitalocean_domain.default test.ztf.mjuric.org

@@ -93,7 +93,7 @@ resource "digitalocean_droplet" "broker" {
     inline = [
       "export PATH=$PATH:/usr/bin",
       "cd /root/provisioning",
-      "bash ./bootstrap.sh ${replace(local.broker_fqdn, ".", "-")}"
+      "bash ./bootstrap.sh ${replace(local.broker_fqdn, ".", "-")} 2>&1 | tee /root/bootstrap.log | grep -v '^+'"
     ]
   }
 }
@@ -174,7 +174,7 @@ resource "null_resource" "provision_monitor" {
     inline = [
       "export PATH=$PATH:/usr/bin",
       "cd /root/provisioning",
-      "bash ./bootstrap.sh ${local.monitor_fqdn} ${digitalocean_droplet.broker.ipv4_address_private}"
+      "bash ./bootstrap.sh ${local.monitor_fqdn} ${digitalocean_droplet.broker.ipv4_address_private} 2>&1 | tee /root/bootstrap.log | grep -v '^+'"
     ]
   }
 

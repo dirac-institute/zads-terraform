@@ -77,7 +77,8 @@ else
 	ADMINPASS=$(openssl rand -base64 8 | tr -d =)
 	curl -X PUT -H "Content-Type: application/json" -d '{ "oldPassword": "admin", "newPassword": "'"$ADMINPASS"'", "confirmNew": "'"$ADMINPASS"'"}' \
 		http://admin:admin@localhost:3000/api/user/password
-	echo "Grafana admin password: $ADMINPASS"
+	echo "$ADMINPASS" > /root/grafana.admin.password.txt
+	echo "Grafana admin password is: '$ADMINPASS' (also saved in /root/grafana.admin.password.txt)"
 fi
 
 systemctl start grafana-server
