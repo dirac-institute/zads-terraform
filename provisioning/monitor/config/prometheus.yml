@@ -39,6 +39,10 @@ scrape_configs:
         target_label: "night"
         replacement: "$1"
       - source_labels: [ topic ]
+        regex: "ztf_\\d+_programid0"
+        target_label: "program"
+        replacement: "Commissioning"
+      - source_labels: [ topic ]
         regex: "ztf_\\d+_programid1"
         target_label: "program"
         replacement: "MSIP"
@@ -46,6 +50,10 @@ scrape_configs:
         regex: "ztf_\\d+_programid2"
         target_label: "program"
         replacement: "ZTF"
+      - source_labels: [ topic ]
+        regex: "ztf_\\d+_programid3"
+        target_label: "program"
+        replacement: "CalTech"
 
   - job_name: 'mirrormaker'
     static_configs:
