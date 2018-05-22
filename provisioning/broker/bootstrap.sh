@@ -30,6 +30,14 @@ mkdir /etc/jmx_exporter
 cp config/{zookeeper,kafka,mirrormaker}.yml /etc/jmx_exporter
 
 #
+# Kafka exporter (for monitoring group offsets)
+#
+## mkdir -p /opt/kafka_exporter/bin
+## curl -LO https://github.com/danielqsj/kafka_exporter/releases/download/v1.1.0/kafka_exporter-1.1.0.linux-amd64.tar.gz
+## tar xzvf kafka_exporter-1.1.0.linux-amd64.tar.gz
+## mv kafka_exporter-1.1.0.linux-amd64/kafka_exporter /opt/kafka_exporter/bin
+
+#
 # Prometheus node exporter (bind to private addres, port 9100)
 #
 curl -s https://packagecloud.io/install/repositories/prometheus-rpm/release/script.rpm.sh | bash
