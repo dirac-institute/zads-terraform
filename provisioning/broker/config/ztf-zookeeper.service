@@ -11,6 +11,7 @@ Environment='KAFKA_OPTS=-javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent.ja
 ExecStart=/usr/bin/zookeeper-server-start /etc/kafka/zookeeper.properties
 TimeoutStopSec=180
 Restart=no
+SyslogIdentifier=ztf-zookeeper
 
 [Install]
 WantedBy=multi-user.target

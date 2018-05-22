@@ -63,7 +63,7 @@ cp config/ztf-zookeeper.service /etc/systemd/system/ztf-zookeeper.service
 # KAFKA
 #
 cp config/server.properties /etc/kafka/server.properties
-cp config/ztf-alerts.service /etc/systemd/system/ztf-alerts.service
+cp config/ztf-kafka.service /etc/systemd/system/ztf-kafka.service
 
 #
 # MIRROR-MAKER
@@ -88,8 +88,8 @@ chmod +x /usr/local/bin/kafkacat
 systemctl start ztf-zookeeper
 systemctl enable ztf-zookeeper
 
-systemctl start ztf-alerts
-systemctl enable ztf-alerts
+systemctl start ztf-kafka
+systemctl enable ztf-kafka
 
 systemctl start ztf-mirrormaker
 systemctl enable ztf-mirrormaker

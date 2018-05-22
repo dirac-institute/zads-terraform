@@ -13,6 +13,7 @@ TimeoutStopSec=180
 Restart=always
 SuccessExitStatus=143
 RestartSec=60
+SyslogIdentifier=ztf-kafka
 
 [Install]
 WantedBy=multi-user.target
