@@ -15,6 +15,9 @@ variable "backups_dir" { default = "/dev/null" }		# The directory with saved bac
 								# the particular droplet's bootstrap.sh, but it's usually tarballs to be untarred
 								# into /.
 
+variable "upstream_broker_net" { default = "128.95.79.19/32" }		# The network of IPAC hosts tha will see the floating IP (see below)
+variable "floating_ip"         { default = "167.99.25.103" }		# The IP that IPAC hosts will see when mirrormaker connects to them
+
 ##
 ## You should rarely need to override these:
 ##
@@ -58,32 +61,6 @@ resource "digitalocean_domain" "default" {
 
 #################################################################################
 #
-#  The external (fixed) IP of the broker machine. This survives broker
-#  rebuilds and can be re-pointed to new machines. Used to have a fixed
-#  IP that can be whitelisted at IPAC firewall level.
-#
-#################################################################################
-
-resource "digitalocean_floating_ip" "broker" {
-  region     = "sfo2"
-
-   lifecycle {
-     # This is to prevent accidentally destroying the floating IP
-     # (which will be used on the IPAC side to give us access)
-     prevent_destroy = true
-   }
-}
-
-resource "digitalocean_record" "floatingIP" {
-  domain = "${digitalocean_domain.default.name}"
-  type   = "A"
-  name   = "outgoing-${var.broker_hostname}"
-  value  = "${digitalocean_floating_ip.broker.ip_address}"
-  ttl    = "5"
-}
-
-#################################################################################
-#
 #  The broker machine. Runs zookeeper, kafka, mirrormaker, and Prometheus
 #  metrics exporters.
 #
@@ -92,7 +69,7 @@ resource "digitalocean_record" "floatingIP" {
 resource "digitalocean_droplet" "broker" {
   image = "centos-7-x64"
   name = "${local.broker_fqdn}"
-  region = "${digitalocean_floating_ip.broker.region}"
+  region = "sfo2"
   size = "${var.broker_size}"
   private_networking = true
   ipv6 = true
@@ -101,14 +78,14 @@ resource "digitalocean_droplet" "broker" {
     "${var.ssh_fingerprint}"
   ]
 
-  # bind the floating IP
+  # bind the floating IP to this droplet, if one has been given.
   provisioner "local-exec" {
     command = <<EOF
-	curl -f -X POST \
+	test -z "${var.floating_ip}" || curl -f -X POST \
 		-H 'Content-Type: application/json' \
 		-H 'Authorization: Bearer ${var.do_token}' \
 		-d '{"type": "assign", "droplet_id": ${digitalocean_droplet.broker.id} }' \
-		https://api.digitalocean.com/v2/floating_ips/${digitalocean_floating_ip.broker.ip_address}/actions
+		https://api.digitalocean.com/v2/floating_ips/${var.floating_ip}/actions
 EOF
   }
 
@@ -130,7 +107,7 @@ EOF
     inline = [
       "export PATH=$PATH:/usr/bin",
       "cd /root/provisioning",
-      "bash ./bootstrap.sh ${replace(local.broker_fqdn, ".", "-")} 2>&1 | tee /root/bootstrap.log | grep -v '^+'"
+      "bash ./bootstrap.sh ${replace(local.broker_fqdn, ".", "-")} ${var.upstream_broker_net} 2>&1 | tee /root/bootstrap.log | grep -v '^+'"
     ]
   }
 }

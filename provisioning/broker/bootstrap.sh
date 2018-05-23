@@ -7,37 +7,40 @@
 set -xe
 
 GROUP_ID="$1"
+UPSTREAM_BROKER_NET="$2"
 
 . common/functions.sh
 . common/standard-config.sh
 . common/add-swap.sh 8192
 
 #
-# Make all traffic appear as if it's coming from the floating IP, so that the IPAC
-# broker recognizes us.
+# Make traffic towards the broker appear as if it's coming from the floating
+# IP, so that the IPAC firewall recognizes us.
 #
-# We do this by modifying the default route to include a 'src <anchor_ip>'
-# stanza; i.e., this is equivalent to something like 'ip route change
-# default via gateway src 10.46.0.9'
+# We do this by adding an additional route (see https://unix.stackexchange.com/a/243704)
 #
-if /bin/true; then
-	IFCFG=/etc/sysconfig/network-scripts/ifcfg-eth0
+if [[ ! -z "$UPSTREAM_BROKER_NET" ]]; then
 	ROUTECFG=/etc/sysconfig/network-scripts/route-eth0
+	(
+		# Transform the file to "old" (but more flexible) format, that will
+		# then allow us to add our route.
+		. "$ROUTECFG"
+		eval $(ipcalc -p $ADDRESS0 $NETMASK0)
+		mv "$ROUTECFG" "$ROUTECFG".bak
+		echo $ADDRESS0/$PREFIX via $GATEWAY0 dev eth0 > "$ROUTECFG"
+	)
 
-	GATEWAY=$(sed -n 's/GATEWAY=\(.*\)/\1/p' "$IFCFG")
+	# Add the route to the upstream network that will use our anchor IP as outgoing
+	GATEWAY=$(sed -n 's/GATEWAY=\(.*\)/\1/p' /etc/sysconfig/network-scripts/ifcfg-eth0)
 	ANCHOR_IP=$(curl -s http://169.254.169.254/metadata/v1/interfaces/public/0/anchor_ipv4/address)
+	echo $UPSTREAM_BROKER_NET via $GATEWAY src $ANCHOR_IP >> "$ROUTECFG"
 
-	# Have all outgoing connections appear to come from the anchor IP...
-	echo "SRCADDR=$ANCHOR_IP" >> "$IFCFG"
+	echo "New network routes:"
+	cat $ROUTECFG
 
-	# ... except for the Metadata service IP (which doesn't work otherwise)
-	cat >> /etc/sysconfig/network-scripts/route-eth0 <<-EOF
-		ADDRESS1=169.254.169.254
-		GATEWAY1=$GATEWAY
-		NETMASK1=255.255.255.255
-	EOF
-
+	echo -n "Restarting network..."
 	systemctl restart network
+	echo " done."
 fi
 
 #
