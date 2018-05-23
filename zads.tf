@@ -58,6 +58,32 @@ resource "digitalocean_domain" "default" {
 
 #################################################################################
 #
+#  The external (fixed) IP of the broker machine. This survives broker
+#  rebuilds and can be re-pointed to new machines. Used to have a fixed
+#  IP that can be whitelisted at IPAC firewall level.
+#
+#################################################################################
+
+resource "digitalocean_floating_ip" "broker" {
+  region     = "sfo2"
+
+   lifecycle {
+     # This is to prevent accidentally destroying the floating IP
+     # (which will be used on the IPAC side to give us access)
+     prevent_destroy = true
+   }
+}
+
+resource "digitalocean_record" "floatingIP" {
+  domain = "${digitalocean_domain.default.name}"
+  type   = "A"
+  name   = "outgoing-${var.broker_hostname}"
+  value  = "${digitalocean_floating_ip.broker.ip_address}"
+  ttl    = "5"
+}
+
+#################################################################################
+#
 #  The broker machine. Runs zookeeper, kafka, mirrormaker, and Prometheus
 #  metrics exporters.
 #
@@ -66,7 +92,7 @@ resource "digitalocean_domain" "default" {
 resource "digitalocean_droplet" "broker" {
   image = "centos-7-x64"
   name = "${local.broker_fqdn}"
-  region = "sfo2"
+  region = "${digitalocean_floating_ip.broker.region}"
   size = "${var.broker_size}"
   private_networking = true
   ipv6 = true
@@ -74,6 +100,17 @@ resource "digitalocean_droplet" "broker" {
   ssh_keys = [
     "${var.ssh_fingerprint}"
   ]
+
+  # bind the floating IP
+  provisioner "local-exec" {
+    command = <<EOF
+	curl -f -X POST \
+		-H 'Content-Type: application/json' \
+		-H 'Authorization: Bearer ${var.do_token}' \
+		-d '{"type": "assign", "droplet_id": ${digitalocean_droplet.broker.id} }' \
+		https://api.digitalocean.com/v2/floating_ips/${digitalocean_floating_ip.broker.ip_address}/actions
+EOF
+  }
 
   # upload provisioning scripts and configs
   provisioner "file" {
@@ -99,6 +136,8 @@ resource "digitalocean_droplet" "broker" {
 }
 
 resource "digitalocean_record" "broker" {
+  depends_on = [ "digitalocean_droplet.broker" ]
+
   domain = "${digitalocean_domain.default.name}"
   type   = "A"
   name   = "${var.broker_hostname}"
