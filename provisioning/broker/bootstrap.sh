@@ -7,7 +7,8 @@
 set -xe
 
 GROUP_ID="$1"
-UPSTREAM_BROKER_NET="$2"
+BOOTSTRAP_SERVERS="$2"
+UPSTREAM_BROKER_NET="$3"
 
 . common/functions.sh
 . common/standard-config.sh
@@ -38,7 +39,7 @@ if [[ ! -z "$UPSTREAM_BROKER_NET" ]]; then
 	echo "New network routes:"
 	cat $ROUTECFG
 
-	echo -n "Restarting network..."
+	echo "Restarting network..."
 	systemctl restart network
 	echo " done."
 fi
@@ -101,7 +102,7 @@ cp config/ztf-kafka.service /etc/systemd/system/ztf-kafka.service
 #
 mkdir -p /etc/ztf
 cp config/producer.properties /etc/ztf
-cp_with_subst config/consumer.properties /etc/ztf/consumer.properties GROUP_ID
+cp_with_subst config/consumer.properties /etc/ztf/consumer.properties GROUP_ID BOOTSTRAP_SERVERS
 cp config/ztf-mirrormaker.service /etc/systemd/system/
 
 systemctl daemon-reload

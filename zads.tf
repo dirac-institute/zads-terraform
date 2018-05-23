@@ -15,6 +15,8 @@ variable "backups_dir" { default = "/dev/null" }		# The directory with saved bac
 								# the particular droplet's bootstrap.sh, but it's usually tarballs to be untarred
 								# into /.
 
+variable "upstream_brokers"    { default = "epyc.astro.washington.edu:9092,epyc.astro.washington.edu:9093,epyc.astro.washington.edu:9094" } 
+									# ^-- bootstrap.servers for upstream mirrormaker
 variable "upstream_broker_net" { default = "128.95.79.19/32" }		# The network of IPAC hosts tha will see the floating IP (see below)
 variable "floating_ip"         { default = "167.99.25.103" }		# The IP that IPAC hosts will see when mirrormaker connects to them
 
@@ -107,7 +109,7 @@ EOF
     inline = [
       "export PATH=$PATH:/usr/bin",
       "cd /root/provisioning",
-      "bash ./bootstrap.sh ${replace(local.broker_fqdn, ".", "-")} ${var.upstream_broker_net} 2>&1 | tee /root/bootstrap.log | grep -v '^+'"
+      "bash ./bootstrap.sh ${replace(local.broker_fqdn, ".", "-")} '${var.upstream_brokers}' ${var.upstream_broker_net} 2>&1 | tee /root/bootstrap.log | grep -v '^+'"
     ]
   }
 }
