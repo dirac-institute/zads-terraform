@@ -13,6 +13,34 @@ GROUP_ID="$1"
 . common/add-swap.sh 8192
 
 #
+# Make all traffic appear as if it's coming from the floating IP, so that the IPAC
+# broker recognizes us.
+#
+# We do this by modifying the default route to include a 'src <anchor_ip>'
+# stanza; i.e., this is equivalent to something like 'ip route change
+# default via gateway src 10.46.0.9'
+#
+if /bin/true; then
+	IFCFG=/etc/sysconfig/network-scripts/ifcfg-eth0
+	ROUTECFG=/etc/sysconfig/network-scripts/route-eth0
+
+	GATEWAY=$(sed -n 's/GATEWAY=\(.*\)/\1/p' "$IFCFG")
+	ANCHOR_IP=$(curl -s http://169.254.169.254/metadata/v1/interfaces/public/0/anchor_ipv4/address)
+
+	# Have all outgoing connections appear to come from the anchor IP...
+	echo "SRCADDR=$ANCHOR_IP" >> "$IFCFG"
+
+	# ... except for the Metadata service IP (which doesn't work otherwise)
+	cat >> /etc/sysconfig/network-scripts/route-eth0 <<-EOF
+		ADDRESS1=169.254.169.254
+		GATEWAY1=$GATEWAY
+		NETMASK1=255.255.255.255
+	EOF
+
+	systemctl restart network
+fi
+
+#
 # Add kafka and trusted zones to firewall
 #
 cp config/kafka.xml /etc/firewalld/services/
