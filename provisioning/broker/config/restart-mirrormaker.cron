@@ -1,0 +1,6 @@
+# Restart mirrormaker at the start of each night
+#
+# Note: this must be executed _after_ midningt in the UTC timezone for
+# it to pick up the topic for the current night.
+#
+00 18 * * * root systemctl is-active --quiet ztf-mirrormaker && systemctl restart ztf-mirrormaker

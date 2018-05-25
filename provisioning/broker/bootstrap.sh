@@ -103,7 +103,14 @@ cp config/ztf-kafka.service /etc/systemd/system/ztf-kafka.service
 mkdir -p /etc/ztf
 cp config/producer.properties /etc/ztf
 cp_with_subst config/consumer.properties /etc/ztf/consumer.properties GROUP_ID BOOTSTRAP_SERVERS
+
+# daemon execution start helpers
+cp config/run-mirrormaker.sh /etc/ztf/run-mirrormaker.sh
+chmod +x /etc/ztf/run-mirrormaker.sh
 cp config/ztf-mirrormaker.service /etc/systemd/system/
+
+# retarter cron job
+cp config/restart-mirrormaker.cron /etc/cron.d/restart-mirrormaker
 
 systemctl daemon-reload
 
