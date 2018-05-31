@@ -20,7 +20,7 @@ client for Kafka.
 
 Obtaining `kafkacat`:
 * With conda: `conda install -c conda-forge kafkacat`
-* Pre-build for Linux: `curl -LO http://research.majuric.org/other/kafkacat && chmod +x kafkacat`
+* Pre-built for Linux (RHEL7): `curl -LO http://research.majuric.org/other/kafkacat && chmod +x kafkacat`
 
 Listing all available topics:
 ```
@@ -59,7 +59,7 @@ For a quick test of download speed, we use the [Pipe Viewer](http://www.ivarch.c
 
 Obtaining `pv`:
 * With conda: `conda install -c conda-forge pv`
-* Pre-build for Linux: `curl -LO http://research.majuric.org/other/pv && chmod +x pv`
+* Pre-built for Linux (RHEL7): `curl -LO http://research.majuric.org/other/pv && chmod +x pv`
 
 Test consumption speed:
 ```
