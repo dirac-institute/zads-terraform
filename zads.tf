@@ -24,8 +24,8 @@ variable "floating_ip"         { default = "167.99.25.103" }		# The IP that IPAC
 ## You should rarely need to override these:
 ##
 
-variable "broker_size" { default = "s-6vcpu-16gb" }		# Digital Ocean instance type for the broker machine
-variable "monitor_size" { default = "s-1vcpu-1gb" }		# Digital Ocean instance type for the monitor machine
+variable "broker_size" { default = "s-2vcpu-4gb" }		# Digital Ocean instance type for the broker machine
+variable "monitor_size" { default = "s-2vcpu-2gb" }		# Digital Ocean instance type for the monitor machine
 
 variable "broker_hostname"  { default = "alerts" }              # hostname of the broker
 variable "monitor_hostname" { default = "status" }              # hostname of the monitor
@@ -79,6 +79,10 @@ resource "digitalocean_droplet" "broker" {
   ssh_keys = [
     "${var.ssh_fingerprint}"
   ]
+
+  lifecycle {
+    ignore_changes = ["volume_ids"]
+  }
 
   # bind the floating IP to this droplet, if one has been given.
   provisioner "local-exec" {
