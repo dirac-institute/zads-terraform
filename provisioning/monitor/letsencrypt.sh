@@ -3,7 +3,9 @@
 GRAFANA_FQDN="$1"
 
 set -xe
-. "$(dirname $0)/functions.sh"
+cd "$(dirname $0)"
+
+. common/functions.sh
 
 # Generate new Let's Encrypt certificates
 certbot --apache -d "$1" -m "mjuric@uw.edu" -n certonly --agree-tos
