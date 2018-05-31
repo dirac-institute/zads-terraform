@@ -85,6 +85,7 @@ Obtaining:
 ```
 conda install -c conda-forge fastavro python-avro python-confluent-kafka
 
+git clone https://github.com/ZwickyTransientFacility/ztf-avro-alert
 git clone https://github.com/ZwickyTransientFacility/alert_stream
 cd alert_stream/
 export PYTHONPATH="$PYTHONPATH:$PWD/python"
@@ -94,3 +95,5 @@ Consuming alerts from `ztf_20180528_programid1` with alert contents being printe
 ```
 HOSTNAME=$(hostname) python bin/printStream.py public.alerts.ztf.uw.edu ztf_20180528_programid1
 ```
+
+Note: you may see error messages about not being able to connect to `ipv4#206.189.209.83:9093` of `ipv4#206.189.209.83:9094` -- this is a known bug in the client (a fix is on the way).
