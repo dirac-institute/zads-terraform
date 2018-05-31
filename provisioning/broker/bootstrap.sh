@@ -124,11 +124,13 @@ chmod +x /usr/local/bin/kafkacat
 # Enable and start it all up
 #
 
-systemctl start ztf-zookeeper
-systemctl enable ztf-zookeeper
+if /bin/false; then
+	systemctl start ztf-zookeeper
+	systemctl enable ztf-zookeeper
 
-systemctl start ztf-kafka
-systemctl enable ztf-kafka
+	systemctl start ztf-kafka
+	systemctl enable ztf-kafka
 
-systemctl start ztf-mirrormaker
-systemctl enable ztf-mirrormaker
+	systemctl start ztf-mirrormaker
+	systemctl enable ztf-mirrormaker
+fi
