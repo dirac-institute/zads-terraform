@@ -15,6 +15,11 @@ variable "backups_dir" { default = "/dev/null" }		# The directory with saved bac
 								# the particular droplet's bootstrap.sh, but it's usually tarballs to be untarred
 								# into /.
 
+variable "secrets_dir" { default = "/dev/null" }		# The directory with secrets for the machines. The provisioners expect to
+								# find data in ${secrets_dir}/${resource_name}. What's in there depends on
+								# the particular droplet's bootstrap.sh, but it's usually things like SSH keys
+								# and alike.
+
 variable "upstream_brokers"    { default = "epyc.astro.washington.edu:9092,epyc.astro.washington.edu:9093,epyc.astro.washington.edu:9094" } 
 									# ^-- bootstrap.servers for upstream mirrormaker
 variable "upstream_broker_net" { default = "128.95.79.19/32" }		# The network of IPAC hosts tha will see the floating IP (see below)
@@ -99,6 +104,12 @@ EOF
   provisioner "file" {
     source      = "provisioning/broker"
     destination = "/root/provisioning"
+  }
+
+  # upload secrets
+  provisioner "file" {
+    source      = "${var.secrets_dir}/broker"
+    destination = "/root/provisioning/secrets"
   }
 
   # upload any backups to be restored

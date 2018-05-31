@@ -1,0 +1,75 @@
+#!/bin/bash
+
+set -e
+
+# source configuration
+test -f /etc/sysconfig/ip-whitelist && . /etc/sysconfig/ip-whitelist
+ZONE=${ZONE:-ztf-trusted}
+WORKDIR=${WORKDIR:-/var/lib/ip-whitelist}
+WHITELIST=${WHITELIST:-whitelist.txt}
+
+if [[ ! -d "$WORKDIR/.git" ]]; then
+	cat <<-EOF
+
+	error:
+	  no cloned repository in $WORKDIR.
+
+	  You must clone the git repository containing the \`$WHITELIST\` file
+	  into $WORKDIR before running this program.
+
+	usage:
+	  $(basename $0) [-f]
+
+	description:
+	  $(basename $0): allow connections from a list of IPs and/or networks
+	  to services within the $ZONE firewall zone.
+
+	config:
+	  /etc/sysconfig/ip-whitelist
+
+	options:
+	  -f             apply the new sources (the default is to just echo
+	                 what would be done)
+EOF
+	exit -1
+fi
+
+# decide if this is a dry run
+if [[ "$1" == "-f" ]]; then
+	# Execute, echoing command to the console
+	firewall-cmd()
+	{
+		echo -n firewall-cmd "$@"": "
+		/bin/firewall-cmd "$@"
+	}
+	shift
+else
+	# Just print what we'd run, don't actually run it
+	firewall-cmd() { echo firewall-cmd "$@"; }
+fi
+
+# Clone/pull the repository
+cd "$WORKDIR"
+git pull -q
+
+# Apply changes
+CUR_WHITELIST="$(mktemp)"
+NEW_WHITELIST="$(mktemp)"
+
+# Get a list of currently authorized IPs/networks (one per line)
+/bin/firewall-cmd --zone="$ZONE" --list-sources | tr ' ' '\n' | sort > "$CUR_WHITELIST"
+
+# Remove comments, trailing spaces, and empty lines from the input file
+sed -e 's/#.*$//; s/[[:space:]]*$//; /^\s*$/d' "$WHITELIST" | sort > "$NEW_WHITELIST"
+
+# Find sources to disable
+for SOURCE in $(comm -23 "$CUR_WHITELIST" "$NEW_WHITELIST"); do
+	firewall-cmd --zone="$ZONE" --remove-source="$SOURCE"
+done
+
+# Find sources to add
+for SOURCE in $(comm -13 "$CUR_WHITELIST" "$NEW_WHITELIST"); do
+	firewall-cmd --zone="$ZONE" --add-source="$SOURCE"
+done
+
+rm -f "$CUR_WHITELIST" "$NEW_WHITELIST"
