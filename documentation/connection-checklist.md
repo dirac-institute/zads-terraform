@@ -10,7 +10,7 @@ If your IP is authorized, you should be able to access port 9092. Try:
 telnet public.alerts.ztf.uw.edu 9092
 ```
 
-to test basic connectivity.
+to test basic connectivity. If you need to get an IP (or a small -- say /24 -- network) whitelisted, e-mail the ztf-broker-ops mailing list.
 
 ## Kafka connectivity
 
