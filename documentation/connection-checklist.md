@@ -67,9 +67,12 @@ $ kafkacat -b public.alerts.ztf.uw.edu -t ztf_20180528_programid1 -o beginning -
 % Auto-selecting Consumer mode (use -P or -C to override)
  210MiB [7.52MiB/s] [5.99MiB/s]
 ```
-(we're aiming for 1MByte/sec, sustained). Note: IPv6 is turned on and should work; if you're having issues 
-(e.g., your networking is misconfigured and your host attempts to go over IPv6 though it can't), add
-`-X broker.address.family=v4` option to the `kafkacat` command line.
+(we're aiming for 1MByte/sec, sustained).
+
+Note: IPv6 connectivity is turned on and should work. If you're having issues  (e.g., your networking is
+misconfigured and your host attempts to go over IPv6 though it can't, or your IPv6 address
+hasn't been whitelisted), add `-X broker.address.family=v4` option to the `kafkacat` command line
+to force IPv4.
 
 ## Consuming with ZTF's demo client
 
