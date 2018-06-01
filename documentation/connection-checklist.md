@@ -2,6 +2,15 @@
 
 Note: the examples below assume you're using `bash`. Adjust the command lines to your shell, if necessary.
 
+## Whitelist your external IP
+
+At present, we authorize connections by whitelisting your IP. It's important that the IP you send us is an externally visible one, and not an internally used IP. An simple way to verify you sent us the right IP is using the [ifconfig.co](https://ifconfig.co/) service:
+
+```
+$ curl ifconfig.co
+128.95.79.19
+```
+
 ## Basic network connectivity
 
 If your IP is authorized, you should be able to access port 9092. Try:
