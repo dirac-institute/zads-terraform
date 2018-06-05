@@ -61,7 +61,6 @@ Metadata for all topics (from broker 0: public.alerts.ztf.uw.edu:9092/0):
     partition 13, leader 0, replicas: 0, isrs: 0
 ...
 ```
-
 ## Testing download speeds
 
 For a quick test of download speed, we use the [Pipe Viewer](http://www.ivarch.com/programs/pv.shtml) (`pv`) utility.
@@ -100,9 +99,9 @@ cd alert_stream/
 export PYTHONPATH="$PYTHONPATH:$PWD/python"
 ```
 
-Consuming alerts from `ztf_20180528_programid1` with alert contents being printed out to the screen:
+We've created a topic named `ztf_test`, that has only a few alerts (~500). This may be a good topic to begin with, as any mistakes won't trigger large downloads. To consume alerts from `ztf_test` with alert contents being printed out to the screen:
 ```
-HOSTNAME=$(hostname) python bin/printStream.py public.alerts.ztf.uw.edu ztf_20180528_programid1
+HOSTNAME=$(hostname) python bin/printStream.py public.alerts.ztf.uw.edu ztf_test
 ```
 
 Note: you may see error messages about not being able to connect to `ipv4#206.189.209.83:9093` of `ipv4#206.189.209.83:9094` -- this is a known bug in the client (a fix is on the way).
