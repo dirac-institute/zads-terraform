@@ -94,12 +94,38 @@ echo "NODE_EXPORTER_OPTS='--web.listen-address private:9100'" > /etc/default/nod
 systemctl start node_exporter
 
 #
-# Install and configure kafka, zookeeper, and mirrormaker
+# Utilities for broker maintenance scripts (in /opt/zads)
+#
+
+# jq, the "grep for JSON"
+yum install jq
+
+# kt (https://github.com/fgeller/kt)
+curl -L http://research.majuric.org/other/kt -o /usr/local/bin/kt
+chmod +x /usr/local/bin/kt
+
+# kafkacat
+curl -L http://research.majuric.org/other/kafkacat -o /usr/local/bin/kafkacat
+chmod +x /usr/local/bin/kafkacat
+
+#
+# Install and configure kafka, zookeeper, and mirrormaker, and ZADS scripts
 #
 rpm --import https://packages.confluent.io/rpm/4.1/archive.key
 cp config/confluent.repo /etc/yum.repos.d
 yum install java
 yum install confluent-kafka-2.11
+
+#
+# ZADS scripts and config files live in /opt/ztf
+#
+mkdir -p /opt/ztf/{bin,etc}
+
+cp config/zads-{start-mirrormaker,delete-expired-topics,cron-daily} /opt/ztf/bin
+chmod +x /opt/ztf/bin/*
+
+# daily maintenance (incl. updating mirrormaker topic mirroring list, deleting old topics, etc)
+cp config/zads-daily.cron /etc/cron.d/zads-daily
 
 #
 # ZOOKEEPER
@@ -116,25 +142,11 @@ cp config/ztf-kafka.service /etc/systemd/system/ztf-kafka.service
 #
 # MIRROR-MAKER
 #
-mkdir -p /etc/ztf
-cp config/producer.properties /etc/ztf
-cp_with_subst config/consumer.properties /etc/ztf/consumer.properties GROUP_ID BOOTSTRAP_SERVERS
-
-# daemon execution start helpers
-cp config/run-mirrormaker.sh /etc/ztf/run-mirrormaker.sh
-chmod +x /etc/ztf/run-mirrormaker.sh
+cp config/producer.properties /opt/ztf/etc
+cp_with_subst config/consumer.properties /opt/ztf/etc/consumer.properties GROUP_ID BOOTSTRAP_SERVERS
 cp config/ztf-mirrormaker.service /etc/systemd/system/
 
-# retarter cron job
-cp config/restart-mirrormaker.cron /etc/cron.d/restart-mirrormaker
-
 systemctl daemon-reload
-
-#
-# Set up kafkacat, to ease debugging
-#
-curl -L http://research.majuric.org/other/kafkacat -o /usr/local/bin/kafkacat
-chmod +x /usr/local/bin/kafkacat
 
 #
 # Enable and start it all up

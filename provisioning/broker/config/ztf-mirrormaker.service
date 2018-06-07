@@ -7,10 +7,10 @@ Requires=ztf-kafka.service
 Type=simple
 User=cp-kafka
 Group=confluent
+EnvironmentFile=-/etc/sysconfig/zads
 Environment=KAFKA_HEAP_OPTS=-Xmx2G
 Environment='KAFKA_OPTS=-javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent.jar=private:8081:/etc/jmx_exporter/mirrormaker.yml'
-Environment=ZTF_MIRROR_DAYS=7
-ExecStart=/etc/ztf/run-mirrormaker.sh
+ExecStart=/opt/ztf/bin/zads-start-mirrormaker
 TimeoutStopSec=60
 Restart=always
 SuccessExitStatus=143

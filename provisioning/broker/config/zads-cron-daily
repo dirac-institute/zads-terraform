@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# ZADS maintenance scripts. This is run daily, from cron.
+#
+
+# Source the environment file
+test -f /etc/sysconfig/zads && . /etc/sysconfig/zads
+
+# Restart mirrormaker. Mirrormaker start script will automatically adjust
+# the list of topics that it listens to.
+systemctl is-active --quiet ztf-mirrormaker && systemctl restart ztf-mirrormaker
+
+# Delete expired topics (older than the preset treshold)
+/opt/ztf/bin/zads-delete-expired-topics

@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# Start MirrorMaker mirroring of alert topics from the last $ZTF_MIRROR_DAYS, relative to the current point in time.
+# Does so by constructing a regular expression that will whitelist topic names for the last $ZTF_MIRROR_DAYS days.
+#
+
+ZTF_MIRROR_DAYS=${ZTF_MIRROR_DAYS:-7}
+MM_NUM_STREAMS=${MM_NUM_STREAMS:-14}
+
+# Construct the date part of the regular expression
+DATES=$(for i in $(seq 0 $(($ZTF_MIRROR_DAYS-1)) ) ; do env TZ=UTC date --date="-${i} day" +"%Y%m%d" ; done | paste -sd\|)
+
+# Run mirrormaker
+exec /usr/bin/kafka-mirror-maker --consumer.config /opt/ztf/etc/consumer.properties --producer.config /opt/ztf/etc/producer.properties --whitelist="^ztf_(${DATES})_programid1\$" --num.streams=${MM_NUM_STREAMS}

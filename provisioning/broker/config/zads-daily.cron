@@ -1,0 +1,8 @@
+# Run daily ZADS maintenance
+#
+# Note: this must be executed _after_ midningt in the UTC timezone for
+# mirrormaker to pick up the topic for the current night.  Also, you
+# shouldn't run it during the night, so as not to interfere with
+# observations.
+#
+00 18 * * * root /opt/ztf/bin/zads-cron-daily
