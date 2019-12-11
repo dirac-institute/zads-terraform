@@ -7,7 +7,7 @@ After=network.target ztf-zookeeper.service firewalld.service
 Type=simple
 User=cp-kafka
 Group=confluent
-Environment='KAFKA_OPTS=-javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent.jar=private:8080:/etc/jmx_exporter/kafka.yml'
+Environment='KAFKA_OPTS=-Djava.security.auth.login.config=/etc/kafka/kafka_server_jaas.conf -javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent.jar=private:8080:/etc/jmx_exporter/kafka.yml'
 ExecStart=/usr/bin/kafka-server-start /etc/kafka/server.properties
 TimeoutStopSec=180
 Restart=always
