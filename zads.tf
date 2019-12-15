@@ -22,8 +22,8 @@ variable "secrets_dir" { default = "/dev/null" }		# The directory with secrets f
 
 variable "upstream_brokers"    { default = "public.alerts.ztf.uw.edu" } 
 									# ^-- bootstrap.servers for upstream mirrormaker
-#variable "upstream_broker_net" { default = "128.95.79.19/32" }		# The network of IPAC hosts tha will see the floating IP (see below)
-#variable "floating_ip"         { default = "167.99.25.103" }		# The IP that IPAC hosts will see when mirrormaker connects to them
+variable "upstream_broker_net" { default = "128.95.79.19/32" }		# The network of IPAC hosts tha will see the floating IP (see below)
+variable "floating_ip"         { default = "138.197.238.252" }		# The IP that IPAC hosts will see when mirrormaker connects to them
 
 ##
 ## You should rarely need to override these:
