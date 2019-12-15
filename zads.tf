@@ -20,10 +20,10 @@ variable "secrets_dir" { default = "/dev/null" }		# The directory with secrets f
 								# the particular droplet's bootstrap.sh, but it's usually things like SSH keys
 								# and alike.
 
-variable "upstream_brokers"    { default = "epyc.astro.washington.edu:9092,epyc.astro.washington.edu:9093,epyc.astro.washington.edu:9094" } 
+variable "upstream_brokers"    { default = "public.alerts.ztf.uw.edu" } 
 									# ^-- bootstrap.servers for upstream mirrormaker
-variable "upstream_broker_net" { default = "128.95.79.19/32" }		# The network of IPAC hosts tha will see the floating IP (see below)
-variable "floating_ip"         { default = "167.99.25.103" }		# The IP that IPAC hosts will see when mirrormaker connects to them
+#variable "upstream_broker_net" { default = "128.95.79.19/32" }		# The network of IPAC hosts tha will see the floating IP (see below)
+#variable "floating_ip"         { default = "167.99.25.103" }		# The IP that IPAC hosts will see when mirrormaker connects to them
 
 ##
 ## You should rarely need to override these:
@@ -57,7 +57,7 @@ provider "digitalocean" {
 
 resource "digitalocean_domain" "default" {
    name = "${var.domain}"
-   ip_address = ""
+ 
 
    lifecycle {
      # This is to prevent accidentally destroying the whole (sub)domain; there
