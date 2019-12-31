@@ -220,7 +220,7 @@ resource "digitalocean_record" "monitor" {
   type   = "A"
   name   = "${var.monitor_hostname}"
   value  = "${digitalocean_droplet.monitor.ipv4_address}"
-  ttl    = "5"
+  ttl    = "35"
 }
 
 resource "digitalocean_record" "monitorAAAA" {
@@ -228,5 +228,5 @@ resource "digitalocean_record" "monitorAAAA" {
   type   = "AAAA"
   name   = "${var.monitor_hostname}"
   value  = "${digitalocean_droplet.monitor.ipv6_address}"
-  ttl    = "5"
+  ttl    = "35"
 }
