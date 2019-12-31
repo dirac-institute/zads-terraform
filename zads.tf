@@ -5,7 +5,7 @@
 
 variable "do_token" {}						# Your Digital Ocean API access token
 
-variable "domain"      { default = "test.ztf.mjuric.org" }      # The domain name of the broker. The domain must be under Digital Ocean DNS control.
+variable "domain"      { default = "do.mjuric.org" }      # The domain name of the broker. The domain must be under Digital Ocean DNS control.
 								# The default will create machines in the test domain; override on the command line
 								# to create in the production domain (ztf.mjuric.org).
 
@@ -32,8 +32,8 @@ variable "floating_ip"         { default = "138.197.238.252" }		# The IP that IP
 variable "broker_size" { default = "s-2vcpu-4gb" }		# Digital Ocean instance type for the broker machine
 variable "monitor_size" { default = "s-2vcpu-2gb" }		# Digital Ocean instance type for the monitor machine
 
-variable "broker_hostname"  { default = "alerts" }              # hostname of the broker
-variable "monitor_hostname" { default = "status" }              # hostname of the monitor
+variable "broker_hostname"  { default = "public.test.alerts" }              # hostname of the broker
+variable "monitor_hostname" { default = "public.test.status" }              # hostname of the monitor
 
 #
 # Fingerprint of the key to use for SSH-ing into the newly created machines.
