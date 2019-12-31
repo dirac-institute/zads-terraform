@@ -138,7 +138,7 @@ resource "digitalocean_record" "broker" {
   type   = "A"
   name   = "${var.broker_hostname}"
   value  = "${digitalocean_droplet.broker.ipv4_address}"
-  ttl    = "5"
+  ttl    = "35"
 }
 
 resource "digitalocean_record" "brokerAAAA" {
@@ -146,7 +146,7 @@ resource "digitalocean_record" "brokerAAAA" {
   type   = "AAAA"
   name   = "${var.broker_hostname}"
   value  = "${digitalocean_droplet.broker.ipv6_address}"
-  ttl    = "5"
+  ttl    = "35"
 }
 
 #################################################################################
