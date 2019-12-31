@@ -5,7 +5,7 @@
 
 variable "do_token" {}						# Your Digital Ocean API access token
 
-variable "domain"      { default = "do.mjuric.org" }      # The domain name of the broker. The domain must be under Digital Ocean DNS control.
+variable "domain"      { default = "test.ztf.mjuric.org" }      # The domain name of the broker. The domain must be under Digital Ocean DNS control.
 								# The default will create machines in the test domain; override on the command line
 								# to create in the production domain (ztf.mjuric.org).
 
@@ -15,7 +15,7 @@ variable "backups_dir" { default = "/dev/null" }		# The directory with saved bac
 								# the particular droplet's bootstrap.sh, but it's usually tarballs to be untarred
 								# into /.
 
-variable "secrets_dir" { default = "/secrets" }		# The directory with secrets for the machines. The provisioners expect to
+variable "secrets_dir" { default = "secrets" }		        # The directory with secrets for the machines. The provisioners expect to
 								# find data in ${secrets_dir}/${resource_name}. What's in there depends on
 								# the particular droplet's bootstrap.sh, but it's usually things like SSH keys
 								# and alike.
@@ -32,8 +32,8 @@ variable "floating_ip"         { default = "138.197.238.252" }		# The IP that IP
 variable "broker_size" { default = "s-2vcpu-4gb" }		# Digital Ocean instance type for the broker machine
 variable "monitor_size" { default = "s-2vcpu-2gb" }		# Digital Ocean instance type for the monitor machine
 
-variable "broker_hostname"  { default = "public.test.alerts" }              # hostname of the broker
-variable "monitor_hostname" { default = "public.test.status" }              # hostname of the monitor
+variable "broker_hostname"  { default = "public.alerts" }              # hostname of the broker
+variable "monitor_hostname" { default = "public.status" }              # hostname of the monitor
 
 #
 # Fingerprint of the key to use for SSH-ing into the newly created machines.
