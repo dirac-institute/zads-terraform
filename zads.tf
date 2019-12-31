@@ -15,7 +15,7 @@ variable "backups_dir" { default = "/dev/null" }		# The directory with saved bac
 								# the particular droplet's bootstrap.sh, but it's usually tarballs to be untarred
 								# into /.
 
-variable "secrets_dir" { default = "/dev/null" }		# The directory with secrets for the machines. The provisioners expect to
+variable "secrets_dir" { default = "/secrets" }		# The directory with secrets for the machines. The provisioners expect to
 								# find data in ${secrets_dir}/${resource_name}. What's in there depends on
 								# the particular droplet's bootstrap.sh, but it's usually things like SSH keys
 								# and alike.
@@ -87,9 +87,9 @@ resource "digitalocean_droplet" "broker" {
     "${var.ssh_fingerprint}"
   ]
 
-  lifecycle {
-    ignore_changes = ["volume_ids"]
-  }
+  #lifecycle {
+  #  ignore_changes = ["volume_ids"]
+  #}
 
   # bind the floating IP to this droplet, if one has been given.
   provisioner "local-exec" {
