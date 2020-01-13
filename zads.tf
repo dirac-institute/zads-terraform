@@ -29,7 +29,7 @@ variable "floating_ip"         { default = "138.197.238.252" }		# The IP that IP
 ## You should rarely need to override these:
 ##
 
-variable "broker_size" { default = "s-2vcpu-4gb" }		# Digital Ocean instance type for the broker machine
+variable "broker_size" { default = "s-6vcpu-16gb" }		# Digital Ocean instance type for the broker machine
 variable "monitor_size" { default = "s-2vcpu-2gb" }		# Digital Ocean instance type for the monitor machine
 
 variable "broker_hostname"  { default = "public.alerts" }              # hostname of the broker
