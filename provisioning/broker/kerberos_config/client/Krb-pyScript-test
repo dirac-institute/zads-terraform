@@ -1,0 +1,37 @@
+import fastavro
+import io
+from confluent_kafka import Consumer, KafkaError
+
+os.environ['KRB5_CONFIG'] = '/etc/krb5.conf'
+
+c = Consumer({
+            'bootstrap.servers': 'alerts.do.mjuric.org:9094',
+            'group.id': 'group',
+            'session.timeout.ms': 6000,
+            'enable.auto.commit': 'TRUE',
+            'sasl.kerberos.principal': 'reader@KAFKA.SECURE',
+            'sasl.kerberos.kinit.cmd': 'kinit -t "%{sasl.kerberos.keytab}" -k %{sasl.kerberos.principal}',
+            'sasl.kerberos.keytab': '/<<PATH.TO.KEYTAB>>/reader.user.keytab',
+            'sasl.kerberos.service.name': 'kafka',
+            'security.protocol': 'SASL_PLAINTEXT',
+            'sasl.mechanisms': 'GSSAPI',
+            'auto.offset.reset': 'earliest'
+            })
+
+c.subscribe(['ztf_20191003_programid1'])
+
+while True:
+    msg = c.poll(1.0)
+
+    if msg is None:
+        continue
+    if msg.error():
+        print("Consumer error: {}".format(msg.error()))
+        continue
+
+    bytes_io = io.BytesIO(msg.value())
+    reader = fastavro.reader(bytes_io)
+    data = reader.next()
+    print('Received message: {},{}'.format(data['objectId'], data['candid']))
+
+c.close()
