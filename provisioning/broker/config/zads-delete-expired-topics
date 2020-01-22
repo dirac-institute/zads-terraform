@@ -10,7 +10,7 @@ CUTOFF=$(env TZ=UTC date --date="-$ZTF_MIRROR_DAYS day" +"%Y%m%d")
 
 list_deletable_topics()
 {
-	kt topic -partitions -filter 'ztf_[0-9]+_programid1' |                                                                        # get per-partition topic offset metadata for topics matching an offset
+	kt topic -partitions -filter 'ztf_[0-9]+_programid\d' |                                                                        # get per-partition topic offset metadata for topics matching an offset
 		jq -r '.name as $name | .partitions[] | select($name[4:12] <= "'$CUTOFF'") | [$name, .id, .newest - .oldest] | @tsv' |  # select only topics older than the cutoff date, print number of msgs in each partition, leaving "<topic> <partition> <msgcount>"
 		awk '{a[$1]+=$3} END {for(i in a) print i,a[i]}' |                                                                      # marginalize over partition, leaving "<topic> <msgcount>"
 		sed -n 's/^\(.*\) 0$/\1/p'                                                                                              # print only topic names with zero messages, leaving "<topic>"
