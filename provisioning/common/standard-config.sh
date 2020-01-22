@@ -65,16 +65,16 @@ systemctl restart krb5kdc && systemctl restart kadmin
 kadmin.local -q "add_principal -randkey reader@KAFKA.SECURE"
 kadmin.local -q "add_principal -randkey writer@KAFKA.SECURE"
 kadmin.local -q "add_principal -randkey admin@KAFKA.SECURE"
-kadmin.local -q "add_principal -randkey kafka/public.alerts.ztf.uw.edu@KAFKA.SECURE"
-kadmin.local -q "add_principal -randkey zookeeper/public.alerts.ztf.uw.edu@KAFKA.SECURE"
-kadmin.local -q "add_principal -randkey mirrormaker/public.alerts.ztf.uw.edu@KAFKA.SECURE"
+kadmin.local -q "add_principal -randkey kafka/public2.alerts.ztf.uw.edu@KAFKA.SECURE"
+kadmin.local -q "add_principal -randkey zookeeper/public2.alerts.ztf.uw.edu@KAFKA.SECURE"
+kadmin.local -q "add_principal -randkey mirrormaker/public2.alerts.ztf.uw.edu@KAFKA.SECURE"
 
 kadmin.local -q "xst -kt /etc/keytabs/reader.user.keytab reader@KAFKA.SECURE"
 kadmin.local -q "xst -kt /etc/keytabs/writer.user.keytab writer@KAFKA.SECURE"
 kadmin.local -q "xst -kt /etc/keytabs/admin.user.keytab admin@KAFKA.SECURE"
-kadmin.local -q "xst -kt /etc/keytabs/kafka.service.keytab kafka/public.alerts.ztf.uw.edu@KAFKA.SECURE"
-kadmin.local -q "xst -kt /etc/keytabs/zookeeper.service.keytab zookeeper/public.alerts.ztf.uw.edu@KAFKA.SECURE"
-kadmin.local -q "xst -kt /etc/keytabs/mirrormaker.service.keytab mirrormaker/public.alerts.ztf.uw.edu@KAFKA.SECURE"
+kadmin.local -q "xst -kt /etc/keytabs/kafka.service.keytab kafka/public2.alerts.ztf.uw.edu@KAFKA.SECURE"
+kadmin.local -q "xst -kt /etc/keytabs/zookeeper.service.keytab zookeeper/public2.alerts.ztf.uw.edu@KAFKA.SECURE"
+kadmin.local -q "xst -kt /etc/keytabs/mirrormaker.service.keytab mirrormaker/public2.alerts.ztf.uw.edu@KAFKA.SECURE"
 
 chmod a+r /etc/keytabs/*.keytab
 
