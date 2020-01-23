@@ -53,6 +53,16 @@ yum install joe iftop screen bind-utils telnet git
 # Install Kerberos Server & Setup Kerberos Database (Initial Deployment Only!!!)
 #
 yum install -y krb5-server && yum install -y krb5-workstation && mkdir /etc/keytabs
+
+cp /kerberos_config/krb5.conf /etc/
+cp /kerberos_config/kdc.conf /var/kerberos/krb5kdc/kdc.conf
+cp /kerberos_config/kadm5.acl /var/kerberos/krb5kdc/kadm5.acl
+
+cp /config/kafka_server_jaas.conf /etc/kafka/kafka_server_jaas.conf
+cp /config/kafka_client_jaas.conf /opt/ztf/etc/kafka_client_jaas.conf
+cp /config/zookeeper_jaas.conf /etc/kafka/zookeeper_jaas.conf
+
+
 #
 # !!!IMPORTANT!!!
 # Once initial deployment of broker is complete the following lines of code must be disabled before destroying/rebuilding the broker
