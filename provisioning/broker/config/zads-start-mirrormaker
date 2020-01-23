@@ -11,4 +11,4 @@ MM_NUM_STREAMS=${MM_NUM_STREAMS:-14}
 DATES=$(for i in $(seq 0 $(($ZTF_MIRROR_DAYS-1)) ) ; do env TZ=UTC date --date="-${i} day" +"%Y%m%d" ; done | paste -sd\|)
 
 # Run mirrormaker
-exec /usr/bin/kafka-mirror-maker --consumer.config /opt/ztf/etc/consumer.properties --producer.config /opt/ztf/etc/producer.properties --whitelist="^ztf_(${DATES})_programid1\$" --num.streams=${MM_NUM_STREAMS}
+exec /usr/bin/kafka-mirror-maker --consumer.config /opt/ztf/etc/consumer.properties --producer.config /opt/ztf/etc/producer.properties --whitelist="^ztf_(${DATES})_programid1\$,^ztf_(${DATES})_programid3_public\$" --num.streams=${MM_NUM_STREAMS}
