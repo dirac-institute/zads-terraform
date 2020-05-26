@@ -12,6 +12,7 @@ ExecStart=/usr/bin/zookeeper-server-start /etc/kafka/zookeeper.properties
 TimeoutStopSec=180
 Restart=no
 SyslogIdentifier=ztf-zookeeper
+LimitNOFILE=10000
 
 [Install]
 WantedBy=multi-user.target
