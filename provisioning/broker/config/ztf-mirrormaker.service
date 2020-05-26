@@ -16,6 +16,7 @@ Restart=always
 SuccessExitStatus=143
 RestartSec=60
 SyslogIdentifier=ztf-mirrormaker
+LimitNOFILE=10000
 
 [Install]
 WantedBy=multi-user.target
