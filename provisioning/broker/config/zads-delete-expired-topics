@@ -4,6 +4,8 @@
 ## Then delete them.
 ##
 
+export PATH="$PATH:/usr/local/bin"
+
 ZTF_MIRROR_DAYS=${ZTF_MIRROR_DAYS:-7}
 
 CUTOFF=$(env TZ=UTC date --date="-$ZTF_MIRROR_DAYS day" +"%Y%m%d")
