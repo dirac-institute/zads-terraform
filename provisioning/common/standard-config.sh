@@ -58,9 +58,9 @@ cp kerberos_config/krb5.conf /etc/
 cp kerberos_config/kdc.conf /var/kerberos/krb5kdc/kdc.conf
 cp kerberos_config/kadm5.acl /var/kerberos/krb5kdc/kadm5.acl
 
-cp config/kafka_server_jaas.conf /etc/kafka/kafka_server_jaas.conf
-cp config/kafka_client_jaas.conf /opt/ztf/etc/kafka_client_jaas.conf
-cp config/zookeeper_jaas.conf /etc/kafka/zookeeper_jaas.conf
+cp config/kafka_server_jaas.conf /etc/kafka/
+cp config/kafka_client_jaas.conf /opt/ztf/etc/
+cp config/zookeeper_jaas.conf /etc/kafka/
 
 
 #
