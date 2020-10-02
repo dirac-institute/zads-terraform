@@ -54,13 +54,13 @@ yum install joe iftop screen bind-utils telnet git
 #
 yum install -y krb5-server && yum install -y krb5-workstation && mkdir /etc/keytabs
 
-cp /provisioning/broker/kerberos_config/krb5.conf /etc/
-cp /provisioning/broker/kerberos_configkdc.conf /var/kerberos/krb5kdc/kdc.conf
-cp /provisioning/broker/kerberos_configkadm5.acl /var/kerberos/krb5kdc/kadm5.acl
+cp config/kerberos_config/krb5.conf /etc/
+cp config/kerberos_configkdc.conf /var/kerberos/krb5kdc/kdc.conf
+cp config/kerberos_configkadm5.acl /var/kerberos/krb5kdc/kadm5.acl
 
-cp /config/kafka_server_jaas.conf /etc/kafka/kafka_server_jaas.conf
-cp /config/kafka_client_jaas.conf /opt/ztf/etc/kafka_client_jaas.conf
-cp /config/zookeeper_jaas.conf /etc/kafka/zookeeper_jaas.conf
+cp config/kafka_server_jaas.conf /etc/kafka/kafka_server_jaas.conf
+cp config/kafka_client_jaas.conf /opt/ztf/etc/kafka_client_jaas.conf
+cp config/zookeeper_jaas.conf /etc/kafka/zookeeper_jaas.conf
 
 
 #
