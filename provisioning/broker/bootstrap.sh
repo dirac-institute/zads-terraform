@@ -167,6 +167,7 @@ systemctl daemon-reload
 /usr/sbin/kdb5_util load root@epyc.phys.washington.edu://data/epyc/projects/zads-terraform/public_broker/zads-terraform/kerberos_db_backup/public-kb-db-backup
 
 #restore keytab files to /etc/keytabs/
+mkdir /etc/keytabs/
 scp root@epyc.phys.washington.edu://data/epyc/projects/zads-terraform/public_broker/zads-terraform/kerberos_db_backup/keytabs/*.* /etc/keytabs/
 
 # Enable and start Kerberos (Pre-requisite for Kafka)
