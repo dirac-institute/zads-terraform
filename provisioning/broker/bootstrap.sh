@@ -160,6 +160,21 @@ cp config/kafka_client_jaas.conf /opt/ztf/etc/
 cp config/zookeeper_jaas.conf /etc/kafka/
 
 systemctl daemon-reload
+#initialize kerberos db
+/usr/bin/sbin/kdb5_util create -s -r KAFKA.SECURE -P this-is-unsecure
+
+#restore kerberos db from backup
+/usr/sbin/kdb5_util load root@epyc.phys.washington.edu://data/epyc/projects/zads-terraform/public_broker/zads-terraform/kerberos_db_backup/public-kb-db-backup
+
+#restore keytab files to /etc/keytabs/
+scp root@epyc.phys.washington.edu://data/epyc/projects/zads-terraform/public_broker/zads-terraform/kerberos_db_backup/keytabs/*.* /etc/keytabs/
+
+# Enable and start Kerberos (Pre-requisite for Kafka)
+systemctl start krb5dc
+systemctl enable krb5kdc
+
+systemctl start kadmin
+systemctl enable kadmin
 
 #
 # Enable and start it all up
