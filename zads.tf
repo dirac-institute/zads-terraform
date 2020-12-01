@@ -129,7 +129,7 @@ resource "digitalocean_droplet" "public_broker" {
     inline = [
       "export PATH=$PATH:/usr/bin",
       "cd /root/provisioning",
-      "bash ./bootstrap.sh ${replace(local.public_broker_fqdn, ".", "-")} '${var.upstream_brokers}' ${var.upstream_broker_net} 2>&1 | tee /root/bootstrap.log | grep -v '^+'"
+      "bash ./bootstrap_unsecured_broker.sh ${replace(local.public_broker_fqdn, ".", "-")} '${var.upstream_brokers}' ${var.upstream_broker_net} 2>&1 | tee /root/bootstrap.log | grep -v '^+'"
     ]
   }
 }
