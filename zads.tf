@@ -32,7 +32,8 @@ variable "floating_ip"         { default = "138.197.238.252" }		# The IP that IP
 variable "broker_size" { default = "s-6vcpu-16gb" }		# Digital Ocean instance type for the broker machine
 variable "monitor_size" { default = "s-2vcpu-2gb" }		# Digital Ocean instance type for the monitor machine
 
-variable "broker_hostname"  { default = "public.alerts" }              # hostname of the broker
+variable "public_broker_hostname"  { default = "public.alerts" }       # hostname of the broker
+variable "broker_hostname"  { default = "public2.alerts" }             # hostname of the kerberos secured broker
 variable "monitor_hostname" { default = "public.status" }              # hostname of the monitor
 
 #
@@ -49,6 +50,7 @@ variable "ssh_fingerprint" { default = [ "57:c0:dd:35:2a:06:67:d1:15:ba:6a:74:4d
 #
 
 locals {
+  public_broker_fqdn  = "${var.public_broker_hostname}.${var.domain}"
   broker_fqdn  = "${var.broker_hostname}.${var.domain}"
   monitor_fqdn = "${var.monitor_hostname}.${var.domain}"
 }
@@ -70,7 +72,88 @@ resource "digitalocean_domain" "default" {
 
 #################################################################################
 #
-#  The broker machine. Runs zookeeper, kafka, mirrormaker, and Prometheus
+#  The unsecured public broker machine. Runs zookeeper, kafka, mirrormaker, and Prometheus
+#  metrics exporters.
+#
+#################################################################################
+
+resource "digitalocean_droplet" "public_broker" {
+  image = "centos-7-x64"
+  name = "${local.public_broker_fqdn}"
+  region = "sfo2"
+  size = "${var.broker_size}"
+  private_networking = true
+  ipv6 = true
+  monitoring = true
+  ssh_keys = [
+    "${var.ssh_fingerprint}"
+  ]
+
+  #lifecycle {
+  #  ignore_changes = ["volume_ids"]
+  #}
+
+  # bind the floating IP to this droplet, if one has been given.
+  provisioner "local-exec" {
+    command = <<EOF
+	test -z "${var.floating_ip}" || curl -f -X POST \
+		-H 'Content-Type: application/json' \
+		-H 'Authorization: Bearer ${var.do_token}' \
+		-d '{"type": "assign", "droplet_id": ${digitalocean_droplet.pubic_broker.id} }' \
+		https://api.digitalocean.com/v2/floating_ips/${var.floating_ip}/actions
+EOF
+  }
+
+  # upload provisioning scripts and configs
+  provisioner "file" {
+    source      = "provisioning/broker"
+    destination = "/root/provisioning"
+  }
+
+  # upload secrets
+  provisioner "file" {
+    source      = "${var.secrets_dir}/broker"
+    destination = "/root/provisioning/secrets"
+  }
+
+  # upload any backups to be restored
+  provisioner "file" {
+    on_failure  = "continue"
+    source      = "${var.backups_dir}/broker/latest"
+    destination = "/root/provisioning/backups"
+  }
+
+  # run the provisioner
+  provisioner "remote-exec" {
+    inline = [
+      "export PATH=$PATH:/usr/bin",
+      "cd /root/provisioning",
+      "bash ./bootstrap.sh ${replace(local.public_broker_fqdn, ".", "-")} '${var.upstream_brokers}' ${var.upstream_broker_net} 2>&1 | tee /root/bootstrap.log | grep -v '^+'"
+    ]
+  }
+}
+
+resource "digitalocean_record" "public_broker" {
+  depends_on = [ "digitalocean_droplet.public_broker" ]
+
+  domain = "${digitalocean_domain.default.name}"
+  type   = "A"
+  name   = "${var.public_broker_hostname}"
+  value  = "${digitalocean_droplet.public_broker.ipv4_address}"
+  ttl    = "35"
+}
+
+resource "digitalocean_record" "public_brokerAAAA" {
+  domain = "${digitalocean_domain.default.name}"
+  type   = "AAAA"
+  name   = "${var.broker_hostname}"
+  value  = "${digitalocean_droplet.public_broker.ipv6_address}"
+  ttl    = "35"
+}
+
+#################################################################################
+#
+#  The kerberos secured broker machine. Runs zookeeper, kafka, mirrormaker, and Prometheus
 #  metrics exporters.
 #
 #################################################################################
