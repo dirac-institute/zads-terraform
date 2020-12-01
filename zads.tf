@@ -99,7 +99,7 @@ resource "digitalocean_droplet" "public_broker" {
 	test -z "${var.floating_ip}" || curl -f -X POST \
 		-H 'Content-Type: application/json' \
 		-H 'Authorization: Bearer ${var.do_token}' \
-		-d '{"type": "assign", "droplet_id": ${digitalocean_droplet.pubic_broker.id} }' \
+		-d '{"type": "assign", "droplet_id": ${digitalocean_droplet} }' \
 		https://api.digitalocean.com/v2/floating_ips/${var.floating_ip}/actions
 EOF
   }
