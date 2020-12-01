@@ -24,6 +24,7 @@ variable "upstream_brokers"    { default = "public.alerts.ztf.uw.edu" }
 									# ^-- bootstrap.servers for upstream mirrormaker
 variable "upstream_broker_net" { default = "128.95.79.19/32" }		# The network of IPAC hosts tha will see the floating IP (see below)
 variable "floating_ip"         { default = "138.197.238.252" }		# The IP that IPAC hosts will see when mirrormaker connects to them
+variable "public_floating_ip"  { default = "167.99.25.103" }		# The IP that IPAC hosts will see when mirrormaker connects to them
 
 ##
 ## You should rarely need to override these:
@@ -96,11 +97,11 @@ resource "digitalocean_droplet" "public_broker" {
   # bind the floating IP to this droplet, if one has been given.
   provisioner "local-exec" {
     command = <<EOF
-	test -z "${var.floating_ip}" || curl -f -X POST \
+	test -z "${var.public_floating_ip}" || curl -f -X POST \
 		-H 'Content-Type: application/json' \
 		-H 'Authorization: Bearer ${var.do_token}' \
 		-d '{"type": "assign", "droplet_id": ${digitalocean_droplet.broker.id} }' \
-		https://api.digitalocean.com/v2/floating_ips/${var.floating_ip}/actions
+		https://api.digitalocean.com/v2/floating_ips/${var.public_floating_ip}/actions
 EOF
   }
 
