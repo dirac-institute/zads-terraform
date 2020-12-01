@@ -102,8 +102,8 @@ resource "digitalocean_droplet" "public_broker" {
   #		-H 'Authorization: Bearer ${var.do_token}' \
   #		-d '{"type": "assign", "droplet_id": ${digitalocean_droplet.broker.id} }' \
   #		https://api.digitalocean.com/v2/floating_ips/${var.public_floating_ip}/actions
-EOF
-  }
+#EOF
+ # }
 
   # upload provisioning scripts and configs
   provisioner "file" {
