@@ -3,6 +3,7 @@
 #
 domain              = "alerts.ztf.uw.edu"
 broker_hostname     = "public"
+kerb_hostname       = "public2"
 monitor_hostname    = "monitor"
 backups_dir         = "backups"
 upstream_brokers    = "partnership.alerts.ztf.uw.edu:9092"
