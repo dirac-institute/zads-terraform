@@ -1,0 +1,22 @@
+[Unit]
+Description=ZTF Alert Broker Mirror Maker
+After=ztf-kafka.service
+Requires=ztf-kafka.service
+
+[Service]
+Type=simple
+User=cp-kafka
+Group=confluent
+EnvironmentFile=-/etc/sysconfig/zads
+Environment=KAFKA_HEAP_OPTS=-Xmx2G
+Environment='KAFKA_OPTS=-javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent.jar=private:8081:/etc/jmx_exporter/mirrormaker.yml'
+ExecStart=/opt/ztf/bin/zads-start-mirrormaker
+TimeoutStopSec=60
+Restart=always
+SuccessExitStatus=143
+RestartSec=60
+SyslogIdentifier=ztf-mirrormaker
+LimitNOFILE=10000
+
+[Install]
+WantedBy=multi-user.target
