@@ -94,16 +94,16 @@ resource "digitalocean_droplet" "public_broker" {
   #  ignore_changes = ["volume_ids"]
   #}
 
-  # bind the floating IP to this droplet, if one has been given.
-  #provisioner "local-exec" {
-  #  command = <<EOF
-  #	test -z "${var.public_floating_ip}" || curl -f -X POST \
-  #		-H 'Content-Type: application/json' \
-  #		-H 'Authorization: Bearer ${var.do_token}' \
-  #		-d '{"type": "assign", "droplet_id": ${digitalocean_droplet.broker.id} }' \
-  #		https://api.digitalocean.com/v2/floating_ips/${var.public_floating_ip}/actions
-#EOF
- # }
+   #bind the floating IP to this droplet, if one has been given.
+ provisioner "local-exec" {
+    command = <<EOF
+  	test -z "${var.public_floating_ip}" || curl -f -X POST \
+  		-H 'Content-Type: application/json' \
+  		-H 'Authorization: Bearer ${var.do_token}' \
+  		-d '{"type": "assign", "droplet_id": ${digitalocean_droplet.broker.id} }' \
+  		https://api.digitalocean.com/v2/floating_ips/${var.public_floating_ip}/actions
+EOF
+  }
 
   # upload provisioning scripts and configs
   provisioner "file" {
