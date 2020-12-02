@@ -136,15 +136,15 @@ cp config/ztf-zookeeper.service /etc/systemd/system/ztf-zookeeper.service
 #
 # KAFKA
 #
-cp config/server.properties /etc/kafka/server.properties
-cp config/ztf-kafka.service /etc/systemd/system/ztf-kafka.service
+cp config/unsecured/server.properties /etc/kafka/server.properties
+cp config/unsecured/ztf-kafka.service /etc/systemd/system/ztf-kafka.service
 
 #
 # MIRROR-MAKER
 #
-cp config/producer.properties /opt/ztf/etc
+cp config/unsecured/producer.properties /opt/ztf/etc
 cp_with_subst config/consumer.properties /opt/ztf/etc/consumer.properties GROUP_ID BOOTSTRAP_SERVERS
-cp config/ztf-mirrormaker.service /etc/systemd/system/
+cp config/unsecured/ztf-mirrormaker.service /etc/systemd/system/
 
 
 #
