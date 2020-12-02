@@ -47,10 +47,10 @@ fi
 #
 # Add kafka and trusted zones to firewall
 #
-#cp config/kafka.xml /etc/firewalld/services/
-#cp config/ztf-trusted.xml /etc/firewalld/zones/
-#firewall-offline-cmd --zone=trusted --change-interface=eth1
-#systemctl restart firewalld
+cp config/kafka.xml /etc/firewalld/services/
+cp config/ztf-trusted.xml /etc/firewalld/zones/
+firewall-offline-cmd --zone=trusted --change-interface=eth1
+systemctl restart firewalld
 
 #
 # Firewall whitelist updater
@@ -58,15 +58,15 @@ fi
 # Note: the public key in secrets/id_rsa.pub must be added as a Deployment Key to the
 # github repository with the IP whitelist. Otherwise we won't be able to clone/pull it.
 #
-#cp sync-ip-whitelist /usr/local/sbin
-#chmod +x /usr/local/sbin/sync-ip-whitelist
-#mkdir -p ~/.ssh
-#chmod 700 ~/.ssh
-#cp secrets/id_rsa* ~/.ssh/
-#ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-#restorecon -R ~/.ssh
-#git clone git@github.com:dirac-institute/zads-ip-whitelist-msip.git /var/lib/ip-whitelist
-#echo "*/5 * * * * root /usr/local/sbin/sync-ip-whitelist -f" > /etc/cron.d/ztf-firewall
+cp sync-ip-whitelist /usr/local/sbin
+chmod +x /usr/local/sbin/sync-ip-whitelist
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+cp secrets/id_rsa* ~/.ssh/
+ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+restorecon -R ~/.ssh
+git clone git@github.com:dirac-institute/zads-ip-whitelist-msip.git /var/lib/ip-whitelist
+echo "*/5 * * * * root /usr/local/sbin/sync-ip-whitelist -f" > /etc/cron.d/ztf-firewall
 
 #
 # Prometheus JMX exporter, for exporting JVM (JMX) metrics from kafka and mirrormaker
