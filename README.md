@@ -231,8 +231,15 @@ The provisioning script then:
 * Installs [`kafkacat`](https://github.com/edenhill/kafkacat), a fast Kafka
   client, to ease testing and debugging.
 
-**Security considerations**: The files' configuration is such that Grafana and
-Prometheus only bind to `localhost`.  All Prometheus exporters are bound to the
-private network interface.  Apache is configured as a reverse proxy for Grafana,
-with the HTTP site automatically redirecting all traffic to HTTPS.  Only `SSH`
-(22), `HTTP` (80), and `HTTPS` (443) ports are open on the firewall.
+### Security considerations
+
+* The files' configuration is such that Grafana and
+Prometheus only bind to `localhost`.
+* All Prometheus exporters are bound to the
+private network interface.
+* Apache is configured as a reverse proxy for Grafana,
+with the HTTP site automatically redirecting all traffic to HTTPS.
+* The firewall exposes the following ports:
+  * `SSH`(22)
+  * `HTTP` (80)
+  * `HTTPS` (443)
