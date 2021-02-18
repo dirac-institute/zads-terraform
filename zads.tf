@@ -20,7 +20,7 @@ variable "secrets_dir" { default = "secrets" }		# The directory with secrets for
 								# the particular droplet's bootstrap.sh, but it's usually things like SSH keys
 								# and alike.
 
-variable "upstream_brokers"    { default = "public.alerts.ztf.uw.edu" } 
+variable "upstream_brokers"    { default = "public.alerts.ztf.uw.edu" }
 									# ^-- bootstrap.servers for upstream mirrormaker
 variable "upstream_broker_net" { default = "128.95.79.19/32" }		# The network of IPAC hosts tha will see the floating IP (see below)
 variable "floating_ip"         { default = "138.197.238.252" }		# The IP that IPAC hosts will see when mirrormaker connects to them
@@ -41,9 +41,12 @@ variable "monitor_hostname" { default = "public.status" }              # hostnam
 # Fingerprint of the key to use for SSH-ing into the newly created machines.
 # The key must be already uploaded to Digital Ocean via the web interface.
 #
-variable "ssh_fingerprint" { default = [ "57:c0:dd:35:2a:06:67:d1:15:ba:6a:74:4d:7c:1c:21",
-					"cd:78:d0:36:19:95:59:80:66:d9:e2:c9:39:52:80:c3",
-					"37:70:f2:46:82:98:fc:a4:bf:d3:8c:38:1d:dd:b8:68" ] }
+variable "ssh_fingerprint" { default = [
+  "57:c0:dd:35:2a:06:67:d1:15:ba:6a:74:4d:7c:1c:21",  # mjuric@uw.edu
+  "cd:78:d0:36:19:95:59:80:66:d9:e2:c9:39:52:80:c3",  # ebellm@uw.edu
+  "37:70:f2:46:82:98:fc:a4:bf:d3:8c:38:1d:dd:b8:68",  # chrisp79@uw.edu
+  "ea:aa:76:45:62:90:ce:57:a9:6d:91:8c:98:31:73:e2"   # swnelson@uw.edu
+] }
 
 #################################################################################
 #
@@ -62,7 +65,7 @@ provider "digitalocean" {
 
 resource "digitalocean_domain" "default" {
    name = "${var.domain}"
- 
+
 
    lifecycle {
      # This is to prevent accidentally destroying the whole (sub)domain; there
