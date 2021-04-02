@@ -9,7 +9,7 @@ User=cp-kafka
 Group=confluent
 EnvironmentFile=-/etc/sysconfig/zads
 Environment=KAFKA_HEAP_OPTS=-Xmx2G
-Environment='KAFKA_OPTS=-Djava.security.auth.login.config=/opt/ztf/etc/kafka_client_jaas.conf -javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent.jar=private:8081:/etc/jmx_exporter/mirrormaker.yml'
+Environment='KAFKA_OPTS=-Djava.security.auth.login.config=-javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent.jar=private:8081:/etc/jmx_exporter/mirrormaker.yml'
 ExecStart=/opt/ztf/bin/zads-start-mirrormaker
 TimeoutStopSec=60
 Restart=always
