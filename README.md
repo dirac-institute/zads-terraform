@@ -2,6 +2,11 @@
 
 ## Quick Start
 
+## IMPORTANT UPDATES AS OF 04/02/21
+
+The broker configuration is stored on two branches: Master = unsecured public broker, public-kerberos = secured kerberos enabled broker.
+When deploying via Terraform remember to initiate the rebuild from the correct branch. Failure to do so will result in a Terraform error.
+
 ### Prerequisites
 
 * Learn about and install [Terraform](https://www.terraform.io/intro/index.html) (`brew install terraform`, if
