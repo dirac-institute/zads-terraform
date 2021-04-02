@@ -170,6 +170,8 @@ systemctl daemon-reload
 mkdir /etc/keytabs/
 scp root@epyc.phys.washington.edu://data/epyc/projects/zads-terraform/public_broker/zads-terraform/kerberos_db_backup/keytabs/*.* /etc/keytabs/
 
+systemctl daemon-reload
+
 # Enable and start Kerberos (Pre-requisite for Kafka)
 systemctl start krb5dc
 systemctl enable krb5kdc
