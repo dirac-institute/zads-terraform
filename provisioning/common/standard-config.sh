@@ -49,44 +49,6 @@ yum install joe iftop screen bind-utils telnet git
 #systemctl enable firewalld
 #systemctl start firewalld
 
-#
-# Install Kerberos Server & Setup Kerberos Database (Initial Deployment Only!!!)
-#
-#yum install -y krb5-server && yum install -y krb5-workstation && mkdir /etc/keytabs
-#
-#cp kerberos_config/krb5.conf /etc/
-#cp kerberos_config/kdc.conf /var/kerberos/krb5kdc/kdc.conf
-#cp kerberos_config/kadm5.acl /var/kerberos/krb5kdc/kadm5.acl
-#
-#cp config/kafka_server_jaas.conf /etc/kafka/
-#cp config/kafka_client_jaas.conf /opt/ztf/etc/
-#cp config/zookeeper_jaas.conf /etc/kafka/
-
-
-#
-# !!!IMPORTANT!!!
-# Once initial deployment of broker is complete the following lines of code must be disabled before destroying/rebuilding the broker
-# If the following code is not disabled then the database will be re-constructed using fresh keytabs and principals.
-# This will result in us having to redistribute keytabs to our partners (not good!!).
-#
-#/usr/sbin/kdb5_util create -s -r KAFKA.SECURE -P this-is-unsecure && kadmin.local -q "add_principal -pw this-is-unsecure admin/admin"
-#systemctl restart krb5kdc && systemctl restart kadmin
-#
-#kadmin.local -q "add_principal -randkey reader@KAFKA.SECURE"
-#kadmin.local -q "add_principal -randkey writer@KAFKA.SECURE"
-#kadmin.local -q "add_principal -randkey admin@KAFKA.SECURE"
-#kadmin.local -q "add_principal -randkey kafka/public2.alerts.ztf.uw.edu@KAFKA.SECURE"
-#kadmin.local -q "add_principal -randkey zookeeper/public2.alerts.ztf.uw.edu@KAFKA.SECURE"
-#kadmin.local -q "add_principal -randkey mirrormaker/public2.alerts.ztf.uw.edu@KAFKA.SECURE"
-#
-#kadmin.local -q "xst -kt /etc/keytabs/reader.user.keytab reader@KAFKA.SECURE"
-#kadmin.local -q "xst -kt /etc/keytabs/writer.user.keytab writer@KAFKA.SECURE"
-#kadmin.local -q "xst -kt /etc/keytabs/admin.user.keytab admin@KAFKA.SECURE"
-#kadmin.local -q "xst -kt /etc/keytabs/kafka.service.keytab kafka/public2.alerts.ztf.uw.edu@KAFKA.SECURE"
-#kadmin.local -q "xst -kt /etc/keytabs/zookeeper.service.keytab zookeeper/public2.alerts.ztf.uw.edu@KAFKA.SECURE"
-#kadmin.local -q "xst -kt /etc/keytabs/mirrormaker.service.keytab mirrormaker/public2.alerts.ztf.uw.edu@KAFKA.SECURE"
-#
-#chmod a+r /etc/keytabs/*.keytab
 
 #
 # set up inernal hostnames
