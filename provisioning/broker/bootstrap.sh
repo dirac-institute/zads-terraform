@@ -146,7 +146,36 @@ cp config/producer.properties /opt/ztf/etc
 cp_with_subst config/consumer.properties /opt/ztf/etc/consumer.properties GROUP_ID BOOTSTRAP_SERVERS
 cp config/ztf-mirrormaker.service /etc/systemd/system/
 
+#
+# Install Kerberos Server & Setup Kerberos Database (Initial Deployment Only!!!)
+#
+yum install -y krb5-server && yum install -y krb5-workstation && mkdir /etc/keytabs
+
+cp kerberos_config/krb5.conf /etc/
+cp kerberos_config/kdc.conf /var/kerberos/krb5kdc/kdc.conf
+cp kerberos_config/kadm5.acl /var/kerberos/krb5kdc/kadm5.acl
+
+cp config/kafka_server_jaas.conf /etc/kafka/
+cp config/kafka_client_jaas.conf /opt/ztf/etc/
+cp config/zookeeper_jaas.conf /etc/kafka/
+
 systemctl daemon-reload
+#initialize kerberos db
+/usr/bin/sbin/kdb5_util create -s -r KAFKA.SECURE -P this-is-unsecure
+
+#restore kerberos db from backup
+/usr/sbin/kdb5_util load root@epyc.phys.washington.edu://data/epyc/projects/zads-terraform/public_broker/zads-terraform/kerberos_db_backup/public-kb-db-backup
+
+#restore keytab files to /etc/keytabs/
+mkdir /etc/keytabs/
+scp root@epyc.phys.washington.edu://data/epyc/projects/zads-terraform/public_broker/zads-terraform/kerberos_db_backup/keytabs/*.* /etc/keytabs/
+
+# Enable and start Kerberos (Pre-requisite for Kafka)
+systemctl start krb5dc
+systemctl enable krb5kdc
+
+systemctl start kadmin
+systemctl enable kadmin
 
 #
 # Enable and start it all up
