@@ -2,7 +2,6 @@
 # Production system settings
 #
 domain                     = "alerts.ztf.uw.edu"
-public_broker_hostname     = "public"
 broker_hostname            = "public"
 monitor_hostname           = "monitor"
 backups_dir                = "backups"
