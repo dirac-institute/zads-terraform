@@ -2,7 +2,7 @@
 # Production system settings
 #
 domain              = "alerts.ztf.uw.edu"
-broker_hostname     = "public"
+broker_hostname     = "public2"
 monitor_hostname    = "monitor"
 backups_dir         = "backups"
 upstream_brokers    = "ztfalerts01.ipac.caltech.edu:9092,ztfalerts02.ipac.caltech.edu:9092,ztfalerts03.ipac.caltech.edu:9092"
