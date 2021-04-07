@@ -12,4 +12,4 @@ DATES=$(for i in $(seq 0 $(($ZTF_MIRROR_DAYS-1)) ) ; do env TZ=UTC date --date="
 
 
 # Run mirrormaker
-exec /usr/bin/kafka-mirror-maker --consumer.config /opt/ztf/etc/consumer.properties --producer.config /opt/ztf/etc/producer.properties --whitelist="^ztf_(${DATES})_programid1\$,^decat_(${DATES})_*\$" --num.streams=${MM_NUM_STREAMS}
+exec /usr/bin/kafka-mirror-maker --consumer.config /opt/ztf/etc/consumer.properties --producer.config /opt/ztf/etc/producer.properties --whitelist="^ztf_(${DATES})_programid1\$,^decat_*\$" --num.streams=${MM_NUM_STREAMS}
